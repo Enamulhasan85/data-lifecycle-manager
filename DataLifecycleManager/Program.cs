@@ -1,4 +1,6 @@
-using DataLifecycleManager.Data;
+using DataLifecycleManager.Application.Extensions;
+using DataLifecycleManager.Infrastructure.Data;
+using DataLifecycleManager.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,39 +8,61 @@ namespace DataLifecycleManager
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
-            builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
+
+            // Add Application layer services
+            builder.Services.AddApplication();
+
+            // Add Infrastructure layer services (Database, Identity, Repositories, etc.)
+            builder.Services.AddInfrastructure(builder.Configuration);
+
+            // Add MVC Controllers with Views
             builder.Services.AddControllersWithViews();
 
+            // Add Razor Pages (for Identity UI)
+            builder.Services.AddRazorPages();
+
+            // Add Database Developer Page Exception Filter (for development)
+            builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+            // Build the application
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Apply database migrations and seed default users/roles (both dev and production)
+            await app.UseInfrastructureAsync(
+                runMigrations: true,  // Set to false if you manage migrations manually
+                seedDatabase: true     // Seed default users and roles on startup
+            );
+
+            // Configure the HTTP request pipeline
             if (app.Environment.IsDevelopment())
             {
+                // Show detailed database errors in development
                 app.UseMigrationsEndPoint();
             }
             else
             {
+                // Use error handler in production
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+
+                // Enable HSTS (HTTP Strict Transport Security)
                 app.UseHsts();
             }
 
+            // Middleware pipeline
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
             app.UseRouting();
-
             app.UseAuthorization();
 
+            // Map routes
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
@@ -47,6 +71,7 @@ namespace DataLifecycleManager
             app.MapRazorPages()
                .WithStaticAssets();
 
+            // Run the application
             app.Run();
         }
     }

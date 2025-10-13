@@ -1,0 +1,133 @@
+﻿using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Asp.Versioning;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using DataLifecycleManager.Application.Settings;
+
+namespace DataLifecycleManager.Extensions
+{
+    /// <summary>
+    /// API layer service collection extensions
+    /// Contains only configurations specific to the Web API layer
+    /// </summary>
+    public static class ServiceCollectionExtensions
+    {
+        /// <summary>
+        /// Add Web API specific services and configurations
+        /// </summary>
+        /// <param name="services">The service collection</param>
+        /// <param name="configuration">The configuration</param>
+        /// <returns>The service collection</returns>
+        public static IServiceCollection AddWebApiServices(
+            this IServiceCollection services,
+            IConfiguration configuration)
+        {
+            // Add Authentication & Authorization (API responsibility)
+            services.AddAuthorization();
+
+            // Add Response Compression (API responsibility)
+            services.AddResponseCompression();
+
+            // Add Controllers with global filters (API responsibility)
+            services.AddApiControllers();
+
+            // Add FluentValidation (API responsibility)
+            services.AddApiValidation();
+
+            // Add AutoMapper for API layer (API responsibility)
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+            // Add API Explorer for OpenAPI/Swagger
+            services.AddEndpointsApiExplorer();
+
+            // Add CORS (API responsibility)
+            services.AddApiCors(configuration);
+
+            return services;
+        }
+
+        /// <summary>
+        /// Configure Controllers with global filters
+        /// </summary>
+        private static IServiceCollection AddApiControllers(this IServiceCollection services)
+        {
+            services.AddControllers(options =>
+            {
+            })
+            .AddJsonOptions(options =>
+            {
+                // Configure JSON serialization to handle enums as strings
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+                // Optional: Use camelCase for JSON properties
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
+                // Allow reading and writing of indented JSON for better API responses
+                options.JsonSerializerOptions.WriteIndented = true;
+            });
+
+            // Configure routing options for lowercase URLs
+            services.Configure<RouteOptions>(options =>
+            {
+                options.LowercaseUrls = true;
+                options.LowercaseQueryStrings = true;
+            });
+
+            // Disable automatic model validation since we handle it globally
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
+            });
+
+            return services;
+        }
+
+        /// <summary>
+        /// Configure FluentValidation for API
+        /// </summary>
+        private static IServiceCollection AddApiValidation(this IServiceCollection services)
+        {
+            services.AddFluentValidationAutoValidation();
+            services.AddFluentValidationClientsideAdapters();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Configure CORS for API
+        /// </summary>
+        private static IServiceCollection AddApiCors(this IServiceCollection services, IConfiguration configuration)
+        {
+            // allow origins from appsettings configuration if needed
+            var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
+            if (allowedOrigins != null && allowedOrigins.Length > 0)
+            {
+                services.AddCors(options =>
+                {
+                    options.AddDefaultPolicy(policy =>
+                        policy.WithOrigins(allowedOrigins)
+                              .AllowAnyHeader()
+                              .AllowAnyMethod());
+                });
+            }
+            else
+            {
+                services.AddCors(options =>
+                {
+                    options.AddDefaultPolicy(policy =>
+                        policy.AllowAnyOrigin()
+                              .AllowAnyHeader()
+                              .AllowAnyMethod());
+                });
+            }
+
+            return services;
+        }
+    }
+}
