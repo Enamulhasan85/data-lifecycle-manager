@@ -1,8 +1,6 @@
 using DataLifecycleManager.Application.Extensions;
-using DataLifecycleManager.Infrastructure.Data;
 using DataLifecycleManager.Infrastructure.Extensions;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using DataLifecycleManager.Presentation.Extensions;
 
 namespace DataLifecycleManager
 {
@@ -11,11 +9,6 @@ namespace DataLifecycleManager
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
-            builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
-
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
 
             // Add Application layer services
             builder.Services.AddApplication();
@@ -23,11 +16,8 @@ namespace DataLifecycleManager
             // Add Infrastructure layer services (Database, Identity, Repositories, etc.)
             builder.Services.AddInfrastructure(builder.Configuration);
 
-            // Add MVC Controllers with Views
-            builder.Services.AddControllersWithViews();
-
-            // Add Razor Pages (for Identity UI)
-            builder.Services.AddRazorPages();
+            // Add Presentation layer services (MVC, Razor Pages, Response Compression, etc.)
+            builder.Services.AddPresentation(builder.Configuration);
 
             // Add Database Developer Page Exception Filter (for development)
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();

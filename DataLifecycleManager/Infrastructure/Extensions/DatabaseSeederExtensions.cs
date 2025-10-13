@@ -2,7 +2,7 @@ using DataLifecycleManager.Infrastructure.Data;
 using DataLifecycleManager.Infrastructure.Data.Seed;
 using Microsoft.EntityFrameworkCore;
 
-namespace DataLifecycleManager.Extensions
+namespace DataLifecycleManager.Infrastructure.Extensions
 {
     public static class DatabaseSeederExtensions
     {
