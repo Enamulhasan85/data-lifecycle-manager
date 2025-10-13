@@ -52,3 +52,86 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+
+# Visual Studio
+.vs/
+*.vcxproj.user
+*.vcxproj.filters
+*.user
+*.suo
+*.sln.docstates
+
+# Build results
+**/bin/
+**/obj/
+Debug/
+Release/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+
+# Entity Framework migrations
+App_Data/
+
+# Publish output
+*.publish/
+*.PublishTemp/
+*.pubxml
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.tlog
+
+# contents
+
+# ASP.NET-specific files
+_AppStart.*
+_AutoStart.*
+
+# IIS and webserver
+.localhost/
+
+# Rider files
+.idea/
+*.sln.iml
+
+# Recycle Bin
+$RECYCLE.BIN/
+
+# Backup files
+*~ 
+*.bak
+*.swp
+
+# Logs
+*.log
+*.out
+*.err
+**/logs/
+/bin
+
+# libs
+**/lib/
+
+# Secrets and sensitive data
+*.key
+*.env
+appsettings.*.json
+
