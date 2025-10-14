@@ -34,7 +34,7 @@ namespace DataLifecycleManager.Infrastructure.Configuration
                     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 
                 // Sign-in settings
-                options.SignIn.RequireConfirmedEmail = false; // Set to true in production
+                options.SignIn.RequireConfirmedEmail = true;
                 options.SignIn.RequireConfirmedPhoneNumber = false;
                 options.SignIn.RequireConfirmedAccount = false;
 

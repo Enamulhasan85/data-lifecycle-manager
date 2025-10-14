@@ -14,8 +14,14 @@ namespace DataLifecycleManager.Application.Extensions
         /// </summary>
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
+            // Register AutoMapper
+            services.AddAutoMapper(typeof(ApplicationServiceCollectionExtensions).Assembly);
+
             // Register generic CRUD service
             services.AddScoped(typeof(ICrudService<,>), typeof(CrudService<,>));
+
+            // Register User Management Service
+            services.AddScoped<IUserManagementService, UserManagementService>();
 
             // Add specific application services here as needed
             // Example:

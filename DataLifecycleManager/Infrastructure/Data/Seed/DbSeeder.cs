@@ -75,11 +75,16 @@ namespace DataLifecycleManager.Infrastructure.Data.Seed
                 var existingUser = await _userManager.FindByEmailAsync(userSeedOptions.Email);
                 if (existingUser == null)
                 {
+                    var nameParts = userSeedOptions.FullName?.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+                    var FirstName = nameParts.Length > 0 ? nameParts[0] : string.Empty;
+                    var LastName = nameParts.Length > 1 ? string.Join(' ', nameParts.Skip(1)) : string.Empty;
                     var user = new ApplicationUser
                     {
                         UserName = userSeedOptions.Email,
                         Email = userSeedOptions.Email,
                         FullName = userSeedOptions.FullName,
+                        FirstName = FirstName,
+                        LastName = LastName,
                         EmailConfirmed = true,
                         IsActive = true
                     };
