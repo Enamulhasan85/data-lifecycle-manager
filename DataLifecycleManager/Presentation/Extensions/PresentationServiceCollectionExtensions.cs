@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DataLifecycleManager.Application.Settings;
 
 namespace DataLifecycleManager.Presentation.Extensions
 {
@@ -40,6 +40,7 @@ namespace DataLifecycleManager.Presentation.Extensions
                 options.LowercaseUrls = true;
                 options.LowercaseQueryStrings = false; // Keep query strings case-sensitive
             });
+            services.Configure<ClientInfoSettings>(configuration.GetSection("ClientInfo"));
 
             // Add Response Compression for better performance
             services.AddResponseCompression(options =>
