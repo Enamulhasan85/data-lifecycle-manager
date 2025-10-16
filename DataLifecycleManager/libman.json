@@ -27,6 +27,11 @@
       "destination": "wwwroot/lib/xlsx/"
     },
     {
+      "library": "toastr.js@2.1.4",
+      "destination": "wwwroot/lib/toastr",
+      "files": ["toastr.min.css", "toastr.min.js"]
+    },
+    {
       "library": "font-awesome@6.5.1",
       "destination": "wwwroot/lib/font-awesome",
       "files": [
