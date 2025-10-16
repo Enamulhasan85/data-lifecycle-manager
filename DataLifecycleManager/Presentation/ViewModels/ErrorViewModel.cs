@@ -1,4 +1,4 @@
-namespace DataLifecycleManager.Models
+namespace DataLifecycleManager.Presentation.ViewModels
 {
     public class ErrorViewModel
     {

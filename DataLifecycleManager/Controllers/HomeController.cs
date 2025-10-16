@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using DataLifecycleManager.Models;
+using DataLifecycleManager.Presentation.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DataLifecycleManager.Controllers
