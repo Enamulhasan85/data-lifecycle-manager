@@ -1,0 +1,97 @@
+@model DataLifecycleManager.Presentation.ViewModels.DatabaseConnection.DatabaseConnectionViewModel
+
+@{
+    ViewData["Title"] = "Delete Database Connection";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-trash me-2"></i>Delete Database Connection</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning!</strong> Are you sure you want to delete this database connection?
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Connection Name</dt>
+                        <dd class="col-sm-8">@Model.ConnectionName</dd>
+
+                        <dt class="col-sm-4">Provider</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-info">@Model.Provider</span>
+                        </dd>
+
+                        <dt class="col-sm-4">Server Address</dt>
+                        <dd class="col-sm-8">@Model.ServerAddress</dd>
+
+                        <dt class="col-sm-4">Database Name</dt>
+                        <dd class="col-sm-8">@Model.DatabaseName</dd>
+
+                        <dt class="col-sm-4">Authentication Type</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.UseWindowsAuthentication)
+                            {
+                                <span class="badge bg-success">Windows Authentication</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">SQL Authentication</span>
+                                <div class="mt-1"><small>Username: @Model.Username</small></div>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Status == DataLifecycleManager.Domain.Enums.ConnectionStatus.Active)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Inactive</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Created</dt>
+                        <dd class="col-sm-8">
+                            @Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                            @if (!string.IsNullOrEmpty(Model.CreatedBy))
+                            {
+                                <text>by @Model.CreatedBy</text>
+                            }
+                        </dd>
+
+                        @if (Model.LastModifiedAt.HasValue)
+                        {
+                            <dt class="col-sm-4">Last Modified</dt>
+                            <dd class="col-sm-8">
+                                @Model.LastModifiedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                                @if (!string.IsNullOrEmpty(Model.LastModifiedBy))
+                                {
+                                    <text>by @Model.LastModifiedBy</text>
+                                }
+                            </dd>
+                        }
+                    </dl>
+
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Confirm Delete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

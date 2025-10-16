@@ -1,0 +1,52 @@
+@model DataLifecycleManager.Domain.Entities.SSISPackage
+@{
+    ViewData["Title"] = "Assign Connections";
+    var assignedConnectionIds = ViewBag.AssignedConnectionIds as List<int> ?? new List<int>();
+    var connections = ViewBag.Connections as IEnumerable<DataLifecycleManager.Domain.Entities.DatabaseConnection> ??
+    Enumerable.Empty<DataLifecycleManager.Domain.Entities.DatabaseConnection>();
+}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-plug me-2"></i>Assign Database Connections</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Backend Validation Errors -->
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Error:</strong> @ViewBag.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="AssignConnections" method="post">
+                        <input type="hidden" name="packageId" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label class="form-label">Available Connections</label>
+                            <select name="selectedConnectionIds" class="form-select" multiple size="8">
+                                @foreach (var conn in connections)
+                                {
+                                    <option value="@conn.Id" selected="@(assignedConnectionIds.Contains(conn.Id))">
+                                        @conn.ConnectionName (@conn.ServerAddress/@conn.DatabaseName)
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Assign Connections
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

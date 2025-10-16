@@ -1,0 +1,83 @@
+@model DataLifecycleManager.Presentation.ViewModels.SSISPackage.CreateSSISPackageViewModel
+
+@{
+    ViewData["Title"] = "Create SSIS Package";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-cube me-2"></i>Create SSIS Package</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <!-- Backend Validation Errors -->
+                        @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Validation Error:</strong> @ViewBag.ErrorMessage
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label asp-for="FolderName" class="form-label"></label>
+                            <input asp-for="FolderName" class="form-control" />
+                            <span asp-validation-for="FolderName" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ProjectName" class="form-label"></label>
+                            <input asp-for="ProjectName" class="form-control" />
+                            <span asp-validation-for="ProjectName" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PackageName" class="form-label"></label>
+                            <input asp-for="PackageName" class="form-control" />
+                            <span asp-validation-for="PackageName" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label"></label>
+                            <select asp-for="Status" class="form-select"
+                                asp-items="Html.GetEnumSelectList<DataLifecycleManager.Domain.Enums.SSISPackageStatus>()"></select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="TimeoutMinutes" class="form-label"></label>
+                            <input asp-for="TimeoutMinutes" class="form-control" type="number" min="1" />
+                            <span asp-validation-for="TimeoutMinutes" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PackageParameters" class="form-label"></label>
+                            <textarea asp-for="PackageParameters" class="form-control"
+                                placeholder='{"SrcServer":"localhost","SrcDatabase":"DB1"}'></textarea>
+                            <span asp-validation-for="PackageParameters" class="text-danger"></span>
+                            <small class="text-muted">JSON key-value pairs for package parameters.</small>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Create Package
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

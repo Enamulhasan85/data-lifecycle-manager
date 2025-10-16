@@ -1,0 +1,139 @@
+@model DataLifecycleManager.Presentation.ViewModels.DatabaseConnection.EditDatabaseConnectionViewModel
+
+@{
+    ViewData["Title"] = "Edit Database Connection";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Database Connection</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <!-- Backend Validation Errors -->
+                        @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Validation Error:</strong> @ViewBag.ErrorMessage
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label asp-for="ConnectionName" class="form-label"></label>
+                            <input asp-for="ConnectionName" class="form-control"
+                                placeholder="e.g., HospitalDB Production" />
+                            <span asp-validation-for="ConnectionName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Provider" class="form-label"></label>
+                            <select asp-for="Provider" class="form-select"
+                                asp-items="Html.GetEnumSelectList<DataLifecycleManager.Domain.Enums.DatabaseProvider>()">
+                                <option value="">-- Select Provider --</option>
+                            </select>
+                            <span asp-validation-for="Provider" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ServerAddress" class="form-label"></label>
+                                <input asp-for="ServerAddress" class="form-control"
+                                    placeholder="e.g., localhost or SERVER\\INSTANCE" />
+                                <span asp-validation-for="ServerAddress" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DatabaseName" class="form-label"></label>
+                                <input asp-for="DatabaseName" class="form-control" placeholder="e.g., HospitalDB" />
+                                <span asp-validation-for="DatabaseName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="UseWindowsAuthentication" class="form-check-input"
+                                    id="useWindowsAuth" />
+                                <label class="form-check-label" for="useWindowsAuth">
+                                    Use Windows Authentication
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="sqlAuthFields">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Username" class="form-label"></label>
+                                    <input asp-for="Username" class="form-control" placeholder="SQL username" />
+                                    <span asp-validation-for="Username" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Password" class="form-label">Password</label>
+                                    <input asp-for="Password" type="password" class="form-control"
+                                        placeholder="Leave blank to keep current password" />
+                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                    <small class="text-muted">Note: Password stored as plain text (encryption
+                                        pending)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Status" class="form-label"></label>
+                            <select asp-for="Status" class="form-select"
+                                asp-items="Html.GetEnumSelectList<DataLifecycleManager.Domain.Enums.ConnectionStatus>()"></select>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <small>
+                                <strong>Created:</strong> @Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                                @if (Model.LastModifiedAt.HasValue)
+                                {
+                                    <br />
+                                    <strong>Last Modified:</strong>
+                                    @Model.LastModifiedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                                }
+                            </small>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update Connection
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            function toggleSqlAuthFields() {
+                if ($('#useWindowsAuth').is(':checked')) {
+                    $('#sqlAuthFields').hide();
+                    $('#Username').removeAttr('required');
+                    $('#EncryptedPassword').removeAttr('required');
+                } else {
+                    $('#sqlAuthFields').show();
+                }
+            }
+
+            $('#useWindowsAuth').change(toggleSqlAuthFields);
+            toggleSqlAuthFields();
+        });
+    </script>
+}
