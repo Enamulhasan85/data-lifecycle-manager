@@ -18,7 +18,6 @@ namespace DataLifecycleManager.Infrastructure.Data
         public DbSet<DatabaseConnection> DatabaseConnections { get; set; }
         public DbSet<SSISPackage> SSISPackages { get; set; }
         public DbSet<SSISPackageExecution> SSISPackageExecutions { get; set; }
-        public DbSet<DatabaseConnectionPackage> DatabaseConnectionPackages { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

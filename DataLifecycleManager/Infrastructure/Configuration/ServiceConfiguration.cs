@@ -14,7 +14,6 @@ namespace DataLifecycleManager.Infrastructure.Configuration
         {
             // Register infrastructure services
             services.AddScoped<ICurrentUserService, CurrentUserService>();
-            services.AddScoped<IDateTimeService, DateTimeService>();
             services.AddScoped<INotificationService, NotificationService>();
 
             return services;

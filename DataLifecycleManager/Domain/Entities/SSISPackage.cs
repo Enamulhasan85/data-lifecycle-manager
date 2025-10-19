@@ -4,7 +4,6 @@ using DataLifecycleManager.Domain.Enums;
 
 namespace DataLifecycleManager.Domain.Entities;
 
-
 public class SSISPackage : AuditableEntity<int>
 {
     [Required]
@@ -25,6 +24,18 @@ public class SSISPackage : AuditableEntity<int>
     public SSISPackageStatus Status { get; set; } = SSISPackageStatus.Active;
 
     public int TimeoutMinutes { get; set; } = 60;
+
+    [Required]
+    [MaxLength(500)]
+    public string ServerAddress { get; set; } = string.Empty;
+
+    [MaxLength(200)]
+    public string? Username { get; set; }
+
+    [MaxLength(500)]
+    public string? EncryptedPassword { get; set; }
+
+    public bool UseWindowsAuthentication { get; set; }
 
     /// <summary>
     /// Package parameters stored as JSON (key-value pairs)

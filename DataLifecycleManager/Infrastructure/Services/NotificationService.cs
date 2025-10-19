@@ -5,10 +5,6 @@ using DataLifecycleManager.Application.Settings;
 
 namespace DataLifecycleManager.Infrastructure.Services;
 
-/// <summary>
-/// Infrastructure implementation of notification service
-/// Handles email, SMS, and push notification delivery
-/// </summary>
 public class NotificationService : INotificationService
 {
     private readonly EmailSettings _emailSettings;

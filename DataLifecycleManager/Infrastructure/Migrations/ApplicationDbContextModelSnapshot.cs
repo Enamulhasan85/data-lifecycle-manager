@@ -84,53 +84,6 @@ namespace DataLifecycleManager.Infrastructure.Migrations
                     b.ToTable("DatabaseConnections");
                 });
 
-            modelBuilder.Entity("DataLifecycleManager.Domain.Entities.DatabaseConnectionPackage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ConnectionRole")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("DatabaseConnectionId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("SSISPackageId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DatabaseConnectionId");
-
-                    b.HasIndex("SSISPackageId");
-
-                    b.ToTable("DatabaseConnectionPackages");
-                });
-
             modelBuilder.Entity("DataLifecycleManager.Domain.Entities.SSISPackage", b =>
                 {
                     b.Property<int>("Id")
@@ -149,6 +102,10 @@ namespace DataLifecycleManager.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("EncryptedPassword")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("FolderName")
                         .IsRequired()
@@ -184,11 +141,23 @@ namespace DataLifecycleManager.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("ServerAddress")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<int>("TimeoutMinutes")
                         .HasColumnType("int");
+
+                    b.Property<bool>("UseWindowsAuthentication")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Username")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
 
@@ -481,25 +450,6 @@ namespace DataLifecycleManager.Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("DataLifecycleManager.Domain.Entities.DatabaseConnectionPackage", b =>
-                {
-                    b.HasOne("DataLifecycleManager.Domain.Entities.DatabaseConnection", "DatabaseConnection")
-                        .WithMany()
-                        .HasForeignKey("DatabaseConnectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataLifecycleManager.Domain.Entities.SSISPackage", "SSISPackage")
-                        .WithMany()
-                        .HasForeignKey("SSISPackageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DatabaseConnection");
-
-                    b.Navigation("SSISPackage");
                 });
 
             modelBuilder.Entity("DataLifecycleManager.Domain.Entities.SSISPackageExecution", b =>

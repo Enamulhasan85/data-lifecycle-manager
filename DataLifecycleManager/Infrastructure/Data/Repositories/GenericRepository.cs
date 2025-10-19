@@ -27,22 +27,38 @@ namespace DataLifecycleManager.Infrastructure.Data.Repositories
             return await _dbSet.FindAsync(new object[] { id! }, cancellationToken);
         }
 
-        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            return await _dbSet.Where(predicate).ToListAsync(cancellationToken);
+            return await _dbSet.ToListAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<T>> FindAsync(
+            Expression<Func<T, bool>> predicate,
+            CancellationToken cancellationToken = default,
+            params Expression<Func<T, object>>[] includes)
+        {
+            var query = _dbSet.AsQueryable();
+            
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+            
+            return await query.Where(predicate).ToListAsync(cancellationToken);
         }
 
         public async Task<T?> FirstOrDefaultAsync(
             Expression<Func<T, bool>> predicate,
             CancellationToken cancellationToken = default,
-            Expression<Func<T, object>>[]? includes = null)
+            params Expression<Func<T, object>>[] includes)
         {
             var query = _dbSet.AsQueryable();
-            includes ??= Array.Empty<Expression<Func<T, object>>>();
+            
             foreach (var include in includes)
             {
                 query = query.Include(include);
             }
+            
             return await query.FirstOrDefaultAsync(predicate, cancellationToken);
         }
 
@@ -189,11 +205,6 @@ namespace DataLifecycleManager.Infrastructure.Data.Repositories
             {
                 _dbSet.Remove(entity);
             }
-        }
-
-        public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
-        {
-            return await _dbSet.ToListAsync(cancellationToken);
         }
     }
 }
