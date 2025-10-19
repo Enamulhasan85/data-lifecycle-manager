@@ -8,10 +8,6 @@ using Microsoft.Extensions.Logging;
 
 namespace DataLifecycleManager.Application.Services
 {
-    /// <summary>
-    /// Service implementation for user management operations
-    /// Handles business logic for user CRUD operations
-    /// </summary>
     public class UserManagementService : IUserManagementService
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -89,7 +85,7 @@ namespace DataLifecycleManager.Application.Services
                     PhoneNumber = createUserDto.PhoneNumber,
                     IsActive = createUserDto.IsActive,
                     RegistrationDate = DateTime.UtcNow,
-                    EmailConfirmed = true // Auto-confirm for admin-created users
+                    EmailConfirmed = true
                 };
 
                 var result = await _userManager.CreateAsync(user, createUserDto.Password);
@@ -100,7 +96,6 @@ namespace DataLifecycleManager.Application.Services
                     return Result<string>.Failure(errors);
                 }
 
-                // Assign roles
                 if (createUserDto.SelectedRoles != null && createUserDto.SelectedRoles.Any())
                 {
                     var roleResult = await _userManager.AddToRolesAsync(user, createUserDto.SelectedRoles);
@@ -144,7 +139,6 @@ namespace DataLifecycleManager.Application.Services
                     return Result<bool>.Failure(errors);
                 }
 
-                // Update roles
                 var currentRoles = await _userManager.GetRolesAsync(user);
                 var rolesToRemove = currentRoles.Except(updateUserDto.SelectedRoles ?? new List<string>()).ToList();
                 var rolesToAdd = (updateUserDto.SelectedRoles ?? new List<string>()).Except(currentRoles).ToList();
@@ -173,7 +167,6 @@ namespace DataLifecycleManager.Application.Services
         {
             try
             {
-                // Prevent self-deletion
                 if (userId == currentUserId)
                 {
                     return Result<bool>.Failure("You cannot deactivate your own account");
@@ -185,7 +178,6 @@ namespace DataLifecycleManager.Application.Services
                     return Result<bool>.Failure("User not found");
                 }
 
-                // Soft delete - deactivate user
                 user.IsActive = false;
                 var result = await _userManager.UpdateAsync(user);
 

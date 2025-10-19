@@ -39,6 +39,33 @@
                         
                         <dt class="col-sm-4">Timeout Minutes</dt>
                         <dd class="col-sm-8">@Model.TimeoutMinutes</dd>
+
+                        <dt class="col-sm-4"><hr class="my-2"/><strong>SQL Server Connection</strong></dt>
+                        <dd class="col-sm-8"><hr class="my-2"/></dd>
+
+                        <dt class="col-sm-4">Server Address</dt>
+                        <dd class="col-sm-8">@Model.ServerAddress</dd>
+
+                        <dt class="col-sm-4">Authentication</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.UseWindowsAuthentication)
+                            {
+                                <span class="badge bg-primary">Windows Authentication</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info">SQL Server Authentication</span>
+                            }
+                        </dd>
+
+                        @if (!Model.UseWindowsAuthentication && !string.IsNullOrEmpty(Model.Username))
+                        {
+                            <dt class="col-sm-4">Username</dt>
+                            <dd class="col-sm-8">@Model.Username</dd>
+                        }
+
+                        <dt class="col-sm-4"><hr class="my-2"/><strong>Package Configuration</strong></dt>
+                        <dd class="col-sm-8"><hr class="my-2"/></dd>
                         
                         <dt class="col-sm-4">Package Parameters</dt>
                         <dd class="col-sm-8">
@@ -51,6 +78,9 @@
                                 <small class="text-muted">No parameters configured</small>
                             }
                         </dd>
+
+                        <dt class="col-sm-4"><hr class="my-2"/><strong>Execution History</strong></dt>
+                        <dd class="col-sm-8"><hr class="my-2"/></dd>
                         
                         <dt class="col-sm-4">Last Execution Date</dt>
                         <dd class="col-sm-8">@(Model.LastExecutionDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Never executed")</dd>
@@ -107,9 +137,6 @@
                         <div>
                             <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
                                 <i class="fas fa-edit me-2"></i>Edit
-                            </a>
-                            <a asp-action="AssignConnections" asp-route-id="@Model.Id" class="btn btn-outline-primary">
-                                <i class="fas fa-plug me-2"></i>Connections
                             </a>
                         </div>
                     </div>

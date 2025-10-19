@@ -6,7 +6,7 @@
 
 <div class="container mt-4">
     <div class="row">
-        <div class="col-md-8 mx-auto">
+        <div class="col-md-10 mx-auto">
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit SSIS Package</h4>
@@ -25,47 +25,98 @@
                             </div>
                         }
 
-                        <div class="mb-3">
-                            <label asp-for="FolderName" class="form-label"></label>
-                            <input asp-for="FolderName" class="form-control" />
-                            <span asp-validation-for="FolderName" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="ProjectName" class="form-label"></label>
-                            <input asp-for="ProjectName" class="form-control" />
-                            <span asp-validation-for="ProjectName" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="PackageName" class="form-label"></label>
-                            <input asp-for="PackageName" class="form-control" />
-                            <span asp-validation-for="PackageName" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="Description" class="form-label"></label>
-                            <textarea asp-for="Description" class="form-control"></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
+                        <div class="row">
+                            <!-- Left Column: Package Information -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3"><i class="fas fa-cube me-2"></i>Package Information</h5>
+
+                                <div class="mb-3">
+                                    <label asp-for="FolderName" class="form-label"></label>
+                                    <input asp-for="FolderName" class="form-control" />
+                                    <span asp-validation-for="FolderName" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="ProjectName" class="form-label"></label>
+                                    <input asp-for="ProjectName" class="form-control" />
+                                    <span asp-validation-for="ProjectName" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="PackageName" class="form-label"></label>
+                                    <input asp-for="PackageName" class="form-control" />
+                                    <span asp-validation-for="PackageName" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label"></label>
+                                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Status" class="form-label"></label>
+                                    <select asp-for="Status" class="form-select"
+                                        asp-items="Html.GetEnumSelectList<DataLifecycleManager.Domain.Enums.SSISPackageStatus>()"></select>
+                                    <span asp-validation-for="Status" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="TimeoutMinutes" class="form-label"></label>
+                                    <input asp-for="TimeoutMinutes" class="form-control" type="number" min="1" />
+                                    <span asp-validation-for="TimeoutMinutes" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: SQL Server Connection & Configuration -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3"><i class="fas fa-server me-2"></i>SQL Server Connection</h5>
+
+                                <div class="mb-3">
+                                    <label asp-for="ServerAddress" class="form-label"></label>
+                                    <input asp-for="ServerAddress" class="form-control" 
+                                        placeholder="localhost\SQLEXPRESS" />
+                                    <span asp-validation-for="ServerAddress" class="text-danger"></span>
+                                    <small class="text-muted">Server where SSIS catalog is deployed</small>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    <input asp-for="UseWindowsAuthentication" class="form-check-input" 
+                                        type="checkbox" id="useWindowsAuth" />
+                                    <label asp-for="UseWindowsAuthentication" class="form-check-label" 
+                                        for="useWindowsAuth"></label>
+                                </div>
+
+                                <div id="sqlAuthFields">
+                                    <div class="mb-3">
+                                        <label asp-for="Username" class="form-label"></label>
+                                        <input asp-for="Username" class="form-control" autocomplete="off" />
+                                        <span asp-validation-for="Username" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label asp-for="EncryptedPassword" class="form-label"></label>
+                                        <input asp-for="EncryptedPassword" class="form-control" type="password" 
+                                            autocomplete="new-password" />
+                                        <span asp-validation-for="EncryptedPassword" class="text-danger"></span>
+                                        <small class="text-muted">Leave blank to keep current password</small>
+                                    </div>
+                                </div>
+
+                                <hr class="my-4" />
+                                <h5 class="mb-3"><i class="fas fa-cog me-2"></i>Package Configuration</h5>
+
+                                <div class="mb-3">
+                                    <label asp-for="PackageParameters" class="form-label"></label>
+                                    <textarea asp-for="PackageParameters" class="form-control" rows="5"
+                                        placeholder='{"SrcServer":"localhost","SrcDatabase":"DB1"}'></textarea>
+                                    <span asp-validation-for="PackageParameters" class="text-danger"></span>
+                                    <small class="text-muted">JSON key-value pairs for package parameters.</small>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Status" class="form-label"></label>
-                            <select asp-for="Status" class="form-select"
-                                asp-items="Html.GetEnumSelectList<DataLifecycleManager.Domain.Enums.SSISPackageStatus>()"></select>
-                            <span asp-validation-for="Status" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="TimeoutMinutes" class="form-label"></label>
-                            <input asp-for="TimeoutMinutes" class="form-control" type="number" min="1" />
-                            <span asp-validation-for="TimeoutMinutes" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="PackageParameters" class="form-label"></label>
-                            <textarea asp-for="PackageParameters" class="form-control"
-                                placeholder='{"SrcServer":"localhost","SrcDatabase":"DB1"}'></textarea>
-                            <span asp-validation-for="PackageParameters" class="text-danger"></span>
-                            <small class="text-muted">JSON key-value pairs for package parameters.</small>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between mt-4">
                             <a asp-action="Index" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left me-2"></i>Back to List
                             </a>
@@ -84,4 +135,20 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        $(document).ready(function () {
+            function toggleAuthFields() {
+                if ($('#useWindowsAuth').is(':checked')) {
+                    $('#sqlAuthFields').hide();
+                    $('#Username').val('');
+                    $('#EncryptedPassword').val('');
+                } else {
+                    $('#sqlAuthFields').show();
+                }
+            }
+
+            toggleAuthFields();
+            $('#useWindowsAuth').on('change', toggleAuthFields);
+        });
+    </script>
 }

@@ -24,7 +24,6 @@ public class DatabaseConnectionController : Controller
         _logger = logger;
     }
 
-    // GET: DatabaseConnection
     public async Task<IActionResult> Index()
     {
         var connections = await _connectionService.GetAllAsync();
@@ -32,13 +31,11 @@ public class DatabaseConnectionController : Controller
         return View(viewModels);
     }
 
-    // GET: DatabaseConnection/Create
     public IActionResult Create()
     {
         return View();
     }
 
-    // POST: DatabaseConnection/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateDatabaseConnectionViewModel model)
@@ -74,7 +71,6 @@ public class DatabaseConnectionController : Controller
         return View(model);
     }
 
-    // GET: DatabaseConnection/Edit/5
     [HttpGet]
     public async Task<IActionResult> Edit(int? id)
     {
@@ -87,7 +83,6 @@ public class DatabaseConnectionController : Controller
         return View(viewModel);
     }
 
-    // POST: DatabaseConnection/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(EditDatabaseConnectionViewModel model)
@@ -181,7 +176,6 @@ public class DatabaseConnectionController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // POST: DatabaseConnection/TestConnection/5
     [HttpPost]
     public async Task<IActionResult> TestConnection(int id)
     {
@@ -210,5 +204,4 @@ public class DatabaseConnectionController : Controller
             return Json(new { success = false, message = $"Error testing connection: {ex.Message}" });
         }
     }
-
 }

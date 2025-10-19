@@ -28,14 +28,6 @@
         </div>
     }
 
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show">
-            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
     <div class="card">
         <div class="card-body">
             @if (!Model.Any())
@@ -55,7 +47,8 @@
                                 <th>Folder</th>
                                 <th>Project</th>
                                 <th>Package Name</th>
-                                <th>Description</th>
+                                <th>Server</th>
+                                <th>Auth</th>
                                 <th>Status</th>
                                 <th>Timeout (min)</th>
                                 <th>Last Execution</th>
@@ -76,13 +69,16 @@
                                         <strong>@item.PackageName</strong>
                                     </td>
                                     <td>
-                                        @if (!string.IsNullOrEmpty(item.Description))
+                                        <small>@item.ServerAddress</small>
+                                    </td>
+                                    <td>
+                                        @if (item.UseWindowsAuthentication)
                                         {
-                                            <small>@item.Description</small>
+                                            <span class="badge bg-primary"><i class="fab fa-windows"></i> Windows Auth</span>
                                         }
                                         else
                                         {
-                                            <small class="text-muted">No description</small>
+                                            <span class="badge bg-warning text-dark"><i class="fas fa-database"></i> SQL Auth</span>
                                         }
                                     </td>
                                     <td>
@@ -130,14 +126,6 @@
                                             <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary"
                                                 title="Edit">
                                                 <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a asp-action="AssignConnections" asp-route-id="@item.Id"
-                                                class="btn btn-outline-primary" title="Assign Connections">
-                                                <i class="fas fa-plug"></i>
-                                            </a>
-                                            <a asp-action="ViewConnections" asp-route-id="@item.Id" class="btn btn-outline-info"
-                                                title="View Connections">
-                                                <i class="fas fa-list"></i>
                                             </a>
                                             <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger"
                                                 title="Delete">

@@ -1,10 +1,10 @@
-using DataLifecycleManager.Application.DTOs.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using DataLifecycleManager.Application.DTOs.Common;
 
 namespace DataLifecycleManager.Application.Interfaces
 {
@@ -15,11 +15,18 @@ namespace DataLifecycleManager.Application.Interfaces
     public interface IRepository<T, TKey> where T : class
     {
         Task<T?> GetByIdAsync(TKey id, CancellationToken cancellationToken = default);
-        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
+        Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default);
+        
+        Task<IEnumerable<T>> FindAsync(
+            Expression<Func<T, bool>> predicate,
+            CancellationToken cancellationToken = default,
+            params Expression<Func<T, object>>[] includes);
+        
         Task<T?> FirstOrDefaultAsync(
             Expression<Func<T, bool>> predicate,
             CancellationToken cancellationToken = default,
-            Expression<Func<T, object>>[]? includes = null);
+            params Expression<Func<T, object>>[] includes);
+        
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
         Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
 
@@ -51,8 +58,5 @@ namespace DataLifecycleManager.Application.Interfaces
         Task DeleteAsync(T entity, CancellationToken cancellationToken = default);
         Task DeleteRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
         Task DeleteByIdAsync(TKey id, CancellationToken cancellationToken = default);
-
-        // Additional useful methods
-        Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -4,9 +4,6 @@ using System.Linq.Expressions;
 
 namespace DataLifecycleManager.Application.Services;
 
-/// <summary>
-/// Enhanced CRUD service implementing all useful repository methods
-/// </summary>
 public class CrudService<TEntity, TKey> : ICrudService<TEntity, TKey>
     where TEntity : class
 {
@@ -62,17 +59,20 @@ public class CrudService<TEntity, TKey> : ICrudService<TEntity, TKey>
 
     #endregion
 
-    #region Advanced Query Operations
+    #region Query Operations
 
-    public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TEntity>> FindAsync(
+        Expression<Func<TEntity, bool>> predicate, 
+        CancellationToken cancellationToken = default,
+        params Expression<Func<TEntity, object>>[] includes)
     {
-        return await _repository.FindAsync(predicate, cancellationToken);
+        return await _repository.FindAsync(predicate, cancellationToken, includes);
     }
 
     public async Task<TEntity?> FirstOrDefaultAsync(
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default,
-        Expression<Func<TEntity, object>>[]? includes = null)
+        params Expression<Func<TEntity, object>>[] includes)
     {
         return await _repository.FirstOrDefaultAsync(predicate, cancellationToken, includes);
     }
@@ -143,40 +143,5 @@ public class CrudService<TEntity, TKey> : ICrudService<TEntity, TKey>
 
     #endregion
 
-    #region Batch Operations
-
-    public async Task<IEnumerable<TEntity>> CreateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
-    {
-        var entitiesList = entities.ToList();
-        if (entitiesList.Count == 0)
-            return entitiesList;
-
-        await _repository.AddRangeAsync(entitiesList, cancellationToken);
-        await _unitOfWork.SaveChangesAsync();
-        return entitiesList;
-    }
-
-    public async Task UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
-    {
-        var entitiesList = entities.ToList();
-        if (entitiesList.Count == 0)
-            return;
-
-        await _repository.UpdateRangeAsync(entitiesList, cancellationToken);
-        await _unitOfWork.SaveChangesAsync();
-    }
-
-    public async Task<bool> DeleteRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
-    {
-        var entitiesList = entities.ToList();
-        if (entitiesList.Count == 0)
-            return false;
-
-        await _repository.DeleteRangeAsync(entitiesList, cancellationToken);
-        await _unitOfWork.SaveChangesAsync();
-        return true;
-    }
-
-    #endregion
 }
 

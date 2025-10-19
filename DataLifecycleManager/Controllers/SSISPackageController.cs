@@ -21,15 +21,13 @@ public class SSISPackageController : Controller
         _logger = logger;
     }
 
-    // GET: SSISPackage
     public async Task<IActionResult> Index()
     {
-        var packages = await _ssisPackageService.GetPackagesWithConnectionsAsync();
+        var packages = await _ssisPackageService.GetAllAsync();
         var viewModels = _mapper.Map<List<SSISPackageViewModel>>(packages);
         return View(viewModels);
     }
 
-    // GET: SSISPackage/Details/5
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null) return NotFound();
@@ -41,13 +39,11 @@ public class SSISPackageController : Controller
         return View(viewModel);
     }
 
-    // GET: SSISPackage/Create
     public IActionResult Create()
     {
         return View();
     }
 
-    // POST: SSISPackage/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateSSISPackageViewModel model)
@@ -76,7 +72,6 @@ public class SSISPackageController : Controller
         return View(model);
     }
 
-    // GET: SSISPackage/Edit/5
     [HttpGet]
     public async Task<IActionResult> Edit(int? id)
     {
@@ -89,7 +84,6 @@ public class SSISPackageController : Controller
         return View(viewModel);
     }
 
-    // POST: SSISPackage/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(EditSSISPackageViewModel model)
@@ -126,7 +120,6 @@ public class SSISPackageController : Controller
         return View(model);
     }
 
-    // GET: SSISPackage/Delete/5
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
@@ -138,7 +131,6 @@ public class SSISPackageController : Controller
         return View(viewModel);
     }
 
-    // POST: SSISPackage/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
@@ -161,67 +153,5 @@ public class SSISPackageController : Controller
             TempData["ErrorMessage"] = $"Error deleting SSIS Package: {ex.Message}";
         }
         return RedirectToAction(nameof(Index));
-    }
-
-    // GET: SSISPackage/AssignConnections/5
-    public async Task<IActionResult> AssignConnections(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var package = await _ssisPackageService.GetByIdAsync(id.Value);
-        if (package == null) return NotFound();
-
-        var assignedConnectionIds = await _ssisPackageService.GetAssignedConnectionIdsAsync(id.Value);
-        var connections = await _ssisPackageService.GetActiveConnectionsAsync();
-
-        ViewBag.AssignedConnectionIds = assignedConnectionIds;
-        ViewBag.Connections = connections;
-
-        return View(package);
-    }
-
-    // POST: SSISPackage/AssignConnections
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AssignConnections(int packageId, List<int> selectedConnectionIds)
-    {
-        var package = await _ssisPackageService.GetByIdAsync(packageId);
-        if (package == null) return NotFound();
-
-        try
-        {
-            await _ssisPackageService.AssignConnectionsAsync(packageId, selectedConnectionIds ?? new List<int>());
-
-            TempData["SuccessMessage"] = $"{selectedConnectionIds?.Count ?? 0} database connection(s) assigned to package '{package.PackageName}'.";
-            return RedirectToAction(nameof(Index));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error assigning connections");
-            TempData["ErrorMessage"] = "Error assigning connections.";
-
-            // Re-populate ViewBag data for the view
-            var assignedConnectionIds = await _ssisPackageService.GetAssignedConnectionIdsAsync(packageId);
-            var connections = await _ssisPackageService.GetActiveConnectionsAsync();
-            ViewBag.AssignedConnectionIds = assignedConnectionIds;
-            ViewBag.Connections = connections;
-            ViewBag.ErrorMessage = "Error assigning connections.";
-
-            return View(package);
-        }
-    }
-
-    // GET: SSISPackage/ViewConnections/5
-    public async Task<IActionResult> ViewConnections(int? id)
-    {
-        if (id == null) return NotFound();
-
-        var package = await _ssisPackageService.GetByIdAsync(id.Value);
-        if (package == null) return NotFound();
-
-        var connectionPackages = await _ssisPackageService.GetConnectionPackagesAsync(id.Value);
-
-        ViewBag.Package = package;
-        return View(connectionPackages);
     }
 }

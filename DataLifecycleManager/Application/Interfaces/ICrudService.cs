@@ -13,12 +13,16 @@ public interface ICrudService<TEntity, TKey>
     Task<TEntity?> UpdateAsync(TKey id, TEntity entity, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(TKey id, CancellationToken cancellationToken = default);
 
-    // Advanced query operations
-    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+    // Query operations
+    Task<IEnumerable<TEntity>> FindAsync(
+        Expression<Func<TEntity, bool>> predicate, 
+        CancellationToken cancellationToken = default,
+        params Expression<Func<TEntity, object>>[] includes);
+    
     Task<TEntity?> FirstOrDefaultAsync(
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default,
-        Expression<Func<TEntity, object>>[]? includes = null);
+        params Expression<Func<TEntity, object>>[] includes);
 
     Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
     Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null, CancellationToken cancellationToken = default);
@@ -43,8 +47,4 @@ public interface ICrudService<TEntity, TKey>
         CancellationToken cancellationToken = default,
         params Expression<Func<TEntity, object>>[] includes);
 
-    // Batch operations
-    Task<IEnumerable<TEntity>> CreateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
-    Task UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
-    Task<bool> DeleteRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 }

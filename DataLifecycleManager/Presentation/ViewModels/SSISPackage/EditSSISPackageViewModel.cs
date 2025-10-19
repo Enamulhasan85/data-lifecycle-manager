@@ -37,6 +37,23 @@ namespace DataLifecycleManager.Presentation.ViewModels.SSISPackage
         [Range(1, 1440, ErrorMessage = "Timeout must be between 1 and 1440 minutes")]
         public int TimeoutMinutes { get; set; }
 
+        [Required(ErrorMessage = "Server address is required")]
+        [Display(Name = "SQL Server Address")]
+        [StringLength(500, ErrorMessage = "Server address cannot exceed 500 characters")]
+        public string ServerAddress { get; set; } = string.Empty;
+
+        [Display(Name = "Username")]
+        [StringLength(200, ErrorMessage = "Username cannot exceed 200 characters")]
+        public string? Username { get; set; }
+
+        [Display(Name = "Password")]
+        [StringLength(500, ErrorMessage = "Password cannot exceed 500 characters")]
+        [DataType(DataType.Password)]
+        public string? EncryptedPassword { get; set; }
+
+        [Display(Name = "Use Windows Authentication")]
+        public bool UseWindowsAuthentication { get; set; }
+
         [Display(Name = "Package Parameters (JSON)")]
         public string? PackageParameters { get; set; }
     }

@@ -14,6 +14,9 @@ namespace DataLifecycleManager.Presentation.ViewModels.SSISPackage
         public string? Description { get; set; }
         public SSISPackageStatus Status { get; set; }
         public int TimeoutMinutes { get; set; }
+        public string ServerAddress { get; set; } = string.Empty;
+        public string? Username { get; set; }
+        public bool UseWindowsAuthentication { get; set; }
         public string? PackageParameters { get; set; }
         public DateTime? LastExecutionDate { get; set; }
         public ExecutionStatus? LastExecutionStatus { get; set; }

@@ -8,6 +8,7 @@ namespace DataLifecycleManager.Application.Services;
 public class DatabaseConnectionService : CrudService<DatabaseConnection, int>, IDatabaseConnectionService
 {
     private readonly IRepository<DatabaseConnection, int> _repository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DatabaseConnectionService> _logger;
 
     public DatabaseConnectionService(
@@ -17,6 +18,7 @@ public class DatabaseConnectionService : CrudService<DatabaseConnection, int>, I
         : base(repository, unitOfWork)
     {
         _repository = repository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 

@@ -7,10 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DataLifecycleManager.Controllers
 {
-    /// <summary>
-    /// Controller for managing users (restricted to System Admin and Application Manager roles)
-    /// Thin controller - delegates business logic to Application layer
-    /// </summary>
     [Authorize(Roles = "System Admin,Application Manager")]
     public class UserManagementController : Controller
     {
@@ -28,9 +24,6 @@ namespace DataLifecycleManager.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Display list of all users
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -46,9 +39,6 @@ namespace DataLifecycleManager.Controllers
             return View(viewModels);
         }
 
-        /// <summary>
-        /// Display create user form
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -57,9 +47,6 @@ namespace DataLifecycleManager.Controllers
             return View();
         }
 
-        /// <summary>
-        /// Create a new user
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateUserViewModel model)
@@ -80,17 +67,13 @@ namespace DataLifecycleManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Add backend validation errors to ModelState
             ModelState.AddModelError(string.Empty, result.Message);
-            ViewBag.ErrorMessage = result.Message; // Also pass as ViewBag for explicit display
+            ViewBag.ErrorMessage = result.Message;
             var rolesReload = await _userManagementService.GetAllRolesAsync();
             ViewBag.Roles = rolesReload.Succeeded ? rolesReload.Value : new List<string>();
             return View(model);
         }
 
-        /// <summary>
-        /// Display edit user form
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
@@ -110,9 +93,6 @@ namespace DataLifecycleManager.Controllers
             return View(model);
         }
 
-        /// <summary>
-        /// Update user information
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditUserViewModel model)
@@ -133,17 +113,13 @@ namespace DataLifecycleManager.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Add backend validation errors to ModelState
             ModelState.AddModelError(string.Empty, result.Message);
-            ViewBag.ErrorMessage = result.Message; // Also pass as ViewBag for explicit display
+            ViewBag.ErrorMessage = result.Message;
             var rolesReload = await _userManagementService.GetAllRolesAsync();
             ViewBag.Roles = rolesReload.Succeeded ? rolesReload.Value : new List<string>();
             return View(model);
         }
 
-        /// <summary>
-        /// Display user details
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Details(string id)
         {
