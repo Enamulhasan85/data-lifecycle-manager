@@ -7,9 +7,12 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="fas fa-database me-2"></i>Database Connections</h2>
-        <a asp-action="Create" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Add New Connection
-        </a>
+        @if (User.IsInRole("System Admin") || User.IsInRole("Application Manager"))
+        {
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add New Connection
+            </a>
+        }
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -35,7 +38,10 @@
                 <div class="text-center py-5">
                     <i class="fas fa-database fa-3x text-muted mb-3"></i>
                     <p class="text-muted">No database connections configured yet.</p>
-                    <a asp-action="Create" class="btn btn-primary">Create First Connection</a>
+                    @if (User.IsInRole("System Admin") || User.IsInRole("Application Manager"))
+                    {
+                        <a asp-action="Create" class="btn btn-primary">Create First Connection</a>
+                    }
                 </div>
             }
             else
@@ -91,14 +97,17 @@
                                                 data-id="@item.Id" title="Test Connection">
                                                 <i class="fas fa-plug"></i>
                                             </button>
-                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary"
-                                                title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger"
-                                                title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
+                                            @if (User.IsInRole("System Admin") || User.IsInRole("Application Manager"))
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary"
+                                                    title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger"
+                                                    title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            }
                                         </div>
                                     </td>
                                 </tr>

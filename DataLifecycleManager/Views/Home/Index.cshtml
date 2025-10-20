@@ -1,8 +1,279 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="row bg-gradient bg-warning p-5 my-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="col-lg-8 mx-auto text-center">
+            <div class="mb-2">
+                <i class="fas fa-database fa-5x"></i>
+            </div>
+            <h1 class="display-3 fw-bold mb-3">Data Lifecycle Manager</h1>
+            <p class="lead mb-4">Streamline your data archiving, retention policies, and ETL workflows with intelligent automation</p>
+            @if (!User.Identity!.IsAuthenticated)
+            {
+                <div class="d-flex gap-3 justify-content-center">
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-light btn-lg px-4">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-light btn-lg px-4">
+                        <i class="fas fa-user-plus me-2"></i>Register
+                    </a>
+                </div>
+            }
+            else
+            {
+                <a asp-controller="DatabaseConnection" asp-action="Index" class="btn btn-light btn-lg px-4">
+                    <i class="fas fa-rocket me-2"></i>Get Started
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mb-5">
+        <div class="col-lg-10 mx-auto">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-3">What is DLM?</h2>
+                <p class="lead text-muted">
+                    Data Lifecycle Manager (DLM) is a comprehensive solution designed to handle data archiving, 
+                    lifecycle management, retention policies, and ETL workflows across multiple domains.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Feature 1 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm hover-lift">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-archive fa-lg"></i>
+                            </div>
+                            <h5 class="card-title fw-bold">Data Archiving</h5>
+                            <p class="card-text text-muted">
+                                Efficiently archive historical data with automated retention policies and compliance tracking.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm hover-lift">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-success bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-sync-alt fa-lg"></i>
+                            </div>
+                            <h5 class="card-title fw-bold">ETL Workflows</h5>
+                            <p class="card-text text-muted">
+                                Manage SSIS packages and execute ETL workflows with real-time monitoring and logging.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm hover-lift">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-info bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-shield-alt fa-lg"></i>
+                            </div>
+                            <h5 class="card-title fw-bold">Retention Policies</h5>
+                            <p class="card-text text-muted">
+                                Define and enforce data retention policies to meet regulatory and business requirements.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 border-0 shadow-sm hover-lift">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-warning bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-network-wired fa-lg"></i>
+                            </div>
+                            <h5 class="card-title fw-bold">Multi-Domain</h5>
+                            <p class="card-text text-muted">
+                                Designed for hospitals, academic systems, and enterprise environments with complex data needs.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Capabilities Section -->
+    <div class="row mb-5 bg-light py-5">
+        <div class="col-lg-10 mx-auto">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-3">Key Capabilities</h2>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-success fa-2x me-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">Database Connection Management</h5>
+                            <p class="text-muted">
+                                Securely manage and test connections to multiple databases with support for Windows and SQL authentication.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-success fa-2x me-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">SSIS Package Execution</h5>
+                            <p class="text-muted">
+                                Execute SSIS packages on-demand with parameter configuration and real-time execution monitoring.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-success fa-2x me-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">Role-Based Access Control</h5>
+                            <p class="text-muted">
+                                Secure your data operations with System Admin, Application Manager, and Data Auditor roles.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-success fa-2x me-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">Audit & Compliance</h5>
+                            <p class="text-muted">
+                                Track all data operations with comprehensive audit trails for compliance and accountability.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Access Section (Authenticated Users) -->
+    @if (User.Identity!.IsAuthenticated)
+    {
+        <div class="row mb-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold mb-3">Quick Access</h2>
+                </div>
+
+                <div class="row g-4">
+                    @if (User.IsInRole("System Admin") || User.IsInRole("Application Manager") || User.IsInRole("Data Auditor"))
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <a asp-controller="DatabaseConnection" asp-action="Index" class="text-decoration-none">
+                                <div class="card border-0 shadow-sm hover-lift h-100">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-database text-primary fa-3x mb-3"></i>
+                                        <h5 class="card-title fw-bold">Database Connections</h5>
+                                        <p class="card-text text-muted">Manage database connections</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <a asp-controller="SSISPackage" asp-action="Index" class="text-decoration-none">
+                                <div class="card border-0 shadow-sm hover-lift h-100">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-box text-success fa-3x mb-3"></i>
+                                        <h5 class="card-title fw-bold">SSIS Packages</h5>
+                                        <p class="card-text text-muted">Execute ETL workflows</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+
+                    @if (User.IsInRole("System Admin") || User.IsInRole("Application Manager"))
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <a asp-controller="UserManagement" asp-action="Index" class="text-decoration-none">
+                                <div class="card border-0 shadow-sm hover-lift h-100">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-users text-info fa-3x mb-3"></i>
+                                        <h5 class="card-title fw-bold">User Management</h5>
+                                        <p class="card-text text-muted">Manage users and roles</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Technology Stack -->
+    <div class="row mb-5 py-5 bg-dark text-white">
+        <div class="col-lg-10 mx-auto">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-3">Built with Modern Technology</h2>
+                <p class="lead">Powered by enterprise-grade technologies for reliability and performance</p>
+            </div>
+
+            <div class="row g-4 text-center">
+                <div class="col-6 col-md-3">
+                    <i class="fab fa-microsoft fa-3x mb-2"></i>
+                    <h6>ASP.NET Core</h6>
+                </div>
+                <div class="col-6 col-md-3">
+                    <i class="fas fa-database fa-3x mb-2"></i>
+                    <h6>SQL Server</h6>
+                </div>
+                <div class="col-6 col-md-3">
+                    <i class="fas fa-code-branch fa-3x mb-2"></i>
+                    <h6>SSIS Integration</h6>
+                </div>
+                <div class="col-6 col-md-3">
+                    <i class="fas fa-shield-alt fa-3x mb-2"></i>
+                    <h6>Identity Security</h6>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .feature-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .hover-lift:hover .feature-icon {
+        transform: scale(1.1);
+    }
+</style>

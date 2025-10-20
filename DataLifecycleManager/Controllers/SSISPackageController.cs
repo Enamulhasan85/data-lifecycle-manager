@@ -1,13 +1,14 @@
 using AutoMapper;
 using DataLifecycleManager.Application.Interfaces;
 using DataLifecycleManager.Domain.Entities;
+using DataLifecycleManager.Domain.Identity;
 using DataLifecycleManager.Presentation.ViewModels.SSISPackage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DataLifecycleManager.Controllers;
 
-[Authorize]
+[Authorize(Roles = Roles.ReadRoles)]
 public class SSISPackageController : Controller
 {
     private readonly ISSISPackageService _ssisPackageService;
@@ -42,6 +43,7 @@ public class SSISPackageController : Controller
         return View(viewModel);
     }
 
+    [Authorize(Roles = Roles.WriteRoles)]
     public IActionResult Create()
     {
         return View();
@@ -49,6 +51,7 @@ public class SSISPackageController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = Roles.WriteRoles)]
     public async Task<IActionResult> Create(CreateSSISPackageViewModel model)
     {
         if (!ModelState.IsValid)
@@ -76,6 +79,7 @@ public class SSISPackageController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = Roles.WriteRoles)]
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
@@ -89,6 +93,7 @@ public class SSISPackageController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = Roles.WriteRoles)]
     public async Task<IActionResult> Edit(EditSSISPackageViewModel model)
     {
         if (!ModelState.IsValid)
@@ -123,6 +128,7 @@ public class SSISPackageController : Controller
         return View(model);
     }
 
+    [Authorize(Roles = Roles.WriteRoles)]
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
@@ -136,6 +142,7 @@ public class SSISPackageController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = Roles.WriteRoles)]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         try

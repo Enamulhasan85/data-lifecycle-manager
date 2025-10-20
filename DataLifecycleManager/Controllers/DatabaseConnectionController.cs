@@ -1,13 +1,14 @@
 using AutoMapper;
 using DataLifecycleManager.Application.Interfaces;
 using DataLifecycleManager.Domain.Entities;
+using DataLifecycleManager.Domain.Identity;
 using DataLifecycleManager.Presentation.ViewModels.DatabaseConnection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DataLifecycleManager.Controllers;
 
-[Authorize]
+[Authorize(Roles = Roles.ReadRoles)]
 public class DatabaseConnectionController : Controller
 {
     private readonly IDatabaseConnectionService _connectionService;
@@ -31,6 +32,7 @@ public class DatabaseConnectionController : Controller
         return View(viewModels);
     }
 
+    [Authorize(Roles = Roles.WriteRoles)]
     public IActionResult Create()
     {
         return View();
@@ -38,6 +40,7 @@ public class DatabaseConnectionController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = Roles.WriteRoles)]
     public async Task<IActionResult> Create(CreateDatabaseConnectionViewModel model)
     {
         if (!ModelState.IsValid)
@@ -72,6 +75,7 @@ public class DatabaseConnectionController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = Roles.WriteRoles)]
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
@@ -85,6 +89,7 @@ public class DatabaseConnectionController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = Roles.WriteRoles)]
     public async Task<IActionResult> Edit(EditDatabaseConnectionViewModel model)
     {
         if (!ModelState.IsValid)
@@ -140,6 +145,7 @@ public class DatabaseConnectionController : Controller
     }
 
     // GET: DatabaseConnection/Delete/5
+    [Authorize(Roles = Roles.WriteRoles)]
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
@@ -154,6 +160,7 @@ public class DatabaseConnectionController : Controller
     // POST: DatabaseConnection/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = Roles.WriteRoles)]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         try

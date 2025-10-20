@@ -1,13 +1,14 @@
 using AutoMapper;
 using DataLifecycleManager.Application.DTOs.UserManagement;
 using DataLifecycleManager.Application.Interfaces;
+using DataLifecycleManager.Domain.Identity;
 using DataLifecycleManager.Presentation.ViewModels.UserManagement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DataLifecycleManager.Controllers
 {
-    [Authorize(Roles = "System Admin,Application Manager")]
+    [Authorize(Roles = Roles.WriteRoles)]
     public class UserManagementController : Controller
     {
         private readonly IUserManagementService _userManagementService;
