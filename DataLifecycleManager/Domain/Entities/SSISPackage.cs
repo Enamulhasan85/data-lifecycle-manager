@@ -29,6 +29,10 @@ public class SSISPackage : AuditableEntity<int>
     [MaxLength(500)]
     public string ServerAddress { get; set; } = string.Empty;
 
+    [Required]
+    [MaxLength(200)]
+    public string CatalogName { get; set; } = "SSISDB";
+
     [MaxLength(200)]
     public string? Username { get; set; }
 
