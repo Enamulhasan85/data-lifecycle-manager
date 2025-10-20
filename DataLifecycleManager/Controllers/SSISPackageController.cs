@@ -14,7 +14,10 @@ public class SSISPackageController : Controller
     private readonly IMapper _mapper;
     private readonly ILogger<SSISPackageController> _logger;
 
-    public SSISPackageController(ISSISPackageService ssisPackageService, IMapper mapper, ILogger<SSISPackageController> logger)
+    public SSISPackageController(
+        ISSISPackageService ssisPackageService,
+        IMapper mapper,
+        ILogger<SSISPackageController> logger)
     {
         _ssisPackageService = ssisPackageService;
         _mapper = mapper;
@@ -153,5 +156,111 @@ public class SSISPackageController : Controller
             TempData["ErrorMessage"] = $"Error deleting SSIS Package: {ex.Message}";
         }
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> TestPackage(int id)
+    {
+        try
+        {
+            var (success, result) = await _ssisPackageService.TestPackageConnectionAsync(id);
+
+            if (!success)
+            {
+                return Json(new { success = false, message = result.ErrorMessage });
+            }
+
+            if (result.Success)
+            {
+                var paramInfo = result.Parameters != null && result.Parameters.Any()
+                    ? $"\n\nProject Parameters:\n{string.Join("\n", result.Parameters.Select(p => $"{p.Name} ({p.DataType}){(p.Required ? " *required" : "")}"))}"
+                    : "\n\nNo project parameters found.";
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Package found in catalog!",
+                    parameters = result.Parameters,
+                    folderExists = result.FolderExists,
+                    projectExists = result.ProjectExists,
+                    packageExists = result.PackageExists
+                });
+            }
+
+            return Json(new
+            {
+                success = false,
+                message = result.ErrorMessage,
+                folderExists = result.FolderExists,
+                projectExists = result.ProjectExists,
+                packageExists = result.PackageExists
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error testing SSIS package");
+            return Json(new { success = false, message = $"Error: {ex.Message}" });
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> GetPackageParameters(int id)
+    {
+        try
+        {
+            var (success, result) = await _ssisPackageService.TestPackageConnectionAsync(id);
+
+            if (!success)
+            {
+                return Json(new { success = false, message = result.ErrorMessage });
+            }
+
+            return Json(result.Success
+                ? new { success = true, parameters = result.Parameters }
+                : new { success = false, message = result.ErrorMessage });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving project parameters");
+            return Json(new { success = false, message = $"Error: {ex.Message}" });
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ExecutePackage(int id)
+    {
+        try
+        {
+            var startTime = DateTime.UtcNow;
+            var (success, result) = await _ssisPackageService.ExecutePackageAsync(id);
+            var duration = (int)(DateTime.UtcNow - startTime).TotalSeconds;
+
+            if (!success)
+            {
+                return Json(new { success = false, message = result.ErrorMessage });
+            }
+
+            return Json(result.Success
+                ? new
+                {
+                    success = true,
+                    message = $"Package executed successfully! (ID: {result.ExecutionId}, Duration: {duration}s)",
+                    executionId = result.ExecutionId,
+                    status = result.Status,
+                    durationSeconds = duration
+                }
+                : new
+                {
+                    success = false,
+                    message = $"Execution failed: {result.ErrorMessage}",
+                    status = result.Status,
+                    logs = result.Logs
+                });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error executing SSIS package");
+            return Json(new { success = false, message = $"Error: {ex.Message}" });
+        }
     }
 }

@@ -40,6 +40,11 @@ namespace DataLifecycleManager.Presentation.ViewModels.SSISPackage
         [StringLength(500, ErrorMessage = "Server address cannot exceed 500 characters")]
         public string ServerAddress { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Catalog name is required")]
+        [Display(Name = "Catalog Name")]
+        [StringLength(200, ErrorMessage = "Catalog name cannot exceed 200 characters")]
+        public string CatalogName { get; set; } = "SSISDB";
+
         [Display(Name = "Username")]
         [StringLength(200, ErrorMessage = "Username cannot exceed 200 characters")]
         public string? Username { get; set; }

@@ -26,11 +26,7 @@ namespace DataLifecycleManager.Application.Extensions
             // Register Data Lifecycle Management Services
             services.AddScoped<IDatabaseConnectionService, DatabaseConnectionService>();
             services.AddScoped<ISSISPackageService, SSISPackageService>();
-
-            // Add specific application services here as needed
-            // Example:
-            // services.AddScoped<IDataArchiveService, DataArchiveService>();
-            // services.AddScoped<IRetentionPolicyService, RetentionPolicyService>();
+            services.AddScoped<ISSISCatalogService, SSISCatalogService>();
 
             return services;
         }

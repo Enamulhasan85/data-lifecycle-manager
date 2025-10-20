@@ -17,7 +17,7 @@ namespace DataLifecycleManager.Infrastructure.Configuration
             services.AddScoped(typeof(IRepository<,>), typeof(GenericRepository<,>));
 
             // Register specific repositories
-
+            services.AddScoped<ISSISCatalogRepository, SSISCatalogRepository>();
 
             // Register Unit of Work
             services.AddScoped<IUnitOfWork, UnitOfWork>();

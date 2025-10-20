@@ -74,16 +74,23 @@
 
                                 <div class="mb-3">
                                     <label asp-for="ServerAddress" class="form-label"></label>
-                                    <input asp-for="ServerAddress" class="form-control" 
+                                    <input asp-for="ServerAddress" class="form-control"
                                         placeholder="localhost\SQLEXPRESS" />
                                     <span asp-validation-for="ServerAddress" class="text-danger"></span>
                                     <small class="text-muted">Server where SSIS catalog is deployed</small>
                                 </div>
 
+                                <div class="mb-3">
+                                    <label asp-for="CatalogName" class="form-label"></label>
+                                    <input asp-for="CatalogName" class="form-control" />
+                                    <span asp-validation-for="CatalogName" class="text-danger"></span>
+                                    <small class="text-muted">SSIS Catalog database name (default: SSISDB)</small>
+                                </div>
+
                                 <div class="mb-3 form-check">
-                                    <input asp-for="UseWindowsAuthentication" class="form-check-input" 
-                                        type="checkbox" id="useWindowsAuth" />
-                                    <label asp-for="UseWindowsAuthentication" class="form-check-label" 
+                                    <input asp-for="UseWindowsAuthentication" class="form-check-input" type="checkbox"
+                                        id="useWindowsAuth" />
+                                    <label asp-for="UseWindowsAuthentication" class="form-check-label"
                                         for="useWindowsAuth"></label>
                                 </div>
 
@@ -96,7 +103,7 @@
 
                                     <div class="mb-3">
                                         <label asp-for="EncryptedPassword" class="form-label"></label>
-                                        <input asp-for="EncryptedPassword" class="form-control" type="password" 
+                                        <input asp-for="EncryptedPassword" class="form-control" type="password"
                                             autocomplete="new-password" />
                                         <span asp-validation-for="EncryptedPassword" class="text-danger"></span>
                                         <small class="text-muted">Leave blank to keep current password</small>
@@ -107,11 +114,23 @@
                                 <h5 class="mb-3"><i class="fas fa-cog me-2"></i>Package Configuration</h5>
 
                                 <div class="mb-3">
-                                    <label asp-for="PackageParameters" class="form-label"></label>
-                                    <textarea asp-for="PackageParameters" class="form-control" rows="5"
-                                        placeholder='{"SrcServer":"localhost","SrcDatabase":"DB1"}'></textarea>
+                                    <label class="form-label">Package Parameters</label>
+                                    <div class="d-flex gap-2 mb-2">
+                                        <button type="button" id="addParameterBtn" class="btn btn-sm btn-success">
+                                            <i class="fas fa-plus me-1"></i>Add Parameter
+                                        </button>
+                                        <button type="button" id="loadParametersBtn" class="btn btn-sm btn-info">
+                                            <i class="fas fa-download me-1"></i>Load from SSISDB
+                                        </button>
+                                    </div>
+                                    <div id="parametersList" class="border rounded p-3 bg-light">
+                                        <!-- Dynamic parameter rows will be added here -->
+                                    </div>
+                                    <textarea asp-for="PackageParameters" id="PackageParameters"
+                                        class="form-control d-none"></textarea>
                                     <span asp-validation-for="PackageParameters" class="text-danger"></span>
-                                    <small class="text-muted">JSON key-value pairs for package parameters.</small>
+                                    <small class="text-muted d-block mt-1">Add key-value pairs for SSIS package
+                                        parameters (e.g., SrcServer, SrcDatabase, etc.)</small>
                                 </div>
                             </div>
                         </div>
@@ -137,6 +156,7 @@
     }
     <script>
         $(document).ready(function () {
+            // Toggle authentication fields
             function toggleAuthFields() {
                 if ($('#useWindowsAuth').is(':checked')) {
                     $('#sqlAuthFields').hide();
@@ -149,6 +169,119 @@
 
             toggleAuthFields();
             $('#useWindowsAuth').on('change', toggleAuthFields);
+
+            // Package Parameters Key-Value Editor
+            let parameterIndex = 0;
+
+            function addParameterRow(key = '', value = '') {
+                const rowId = `param-row-${parameterIndex++}`;
+                const row = $(`
+                        <div class="row mb-2" id="${rowId}">
+                            <div class="col-5">
+                                <input type="text" class="form-control form-control-sm param-key" 
+                                    placeholder="Parameter Name" value="${key}" />
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control form-control-sm param-value" 
+                                    placeholder="Parameter Value" value="${value}" />
+                            </div>
+                            <div class="col-1">
+                                <button type="button" class="btn btn-sm btn-danger remove-param" 
+                                    data-row-id="${rowId}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `);
+
+                $('#parametersList').append(row);
+                updateJsonField();
+            }
+
+            function updateJsonField() {
+                const params = {};
+                $('#parametersList .row').each(function () {
+                    const key = $(this).find('.param-key').val().trim();
+                    const value = $(this).find('.param-value').val().trim();
+                    if (key) {
+                        params[key] = value;
+                    }
+                });
+
+                if (Object.keys(params).length > 0) {
+                    $('#PackageParameters').val(JSON.stringify(params));
+                } else {
+                    $('#PackageParameters').val('');
+                }
+            }
+
+            // Add parameter button click
+            $('#addParameterBtn').click(function () {
+                addParameterRow();
+            });
+
+            // Load parameters from SSISDB button click
+            $('#loadParametersBtn').click(function () {
+                var $btn = $(this);
+                var packageId = $('#Id').val();
+                var originalHtml = $btn.html();
+
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Loading...');
+
+                $.post('@Url.Action(action: "GetPackageParameters", "SSISPackage")/' + packageId, function (response) {
+                    if (response.success && response.parameters && response.parameters.length > 0) {
+                        // Clear existing parameters
+                        $('#parametersList').empty();
+
+                        // Add each parameter from SSISDB
+                        response.parameters.forEach(function (param) {
+                            var DefaultValue = param.DefaultValue || '';
+                            addParameterRow(param.Name, DefaultValue);
+                        });
+
+                        toastr.success('Loaded ' + response.parameters.length + ' parameter(s) from SSISDB', 'Success');
+
+                        // Log parameters details
+                        console.log('Loaded Parameters:', response.parameters);
+                    } else {
+                        toastr.warning(response.message || 'No parameters found in SSISDB package', 'No Parameters');
+                    }
+                }).fail(function (xhr, status, error) {
+                    toastr.error('Error loading parameters: ' + error, 'Error');
+                }).always(function () {
+                    $btn.prop('disabled', false).html(originalHtml);
+                });
+            });
+
+            // Remove parameter button click (event delegation)
+            $(document).on('click', '.remove-param', function () {
+                const rowId = $(this).data('row-id');
+                $(`#${rowId}`).remove();
+                updateJsonField();
+            });
+
+            // Update JSON when inputs change
+            $(document).on('input', '.param-key, .param-value', function () {
+                updateJsonField();
+            });
+
+            // Initialize with existing parameters if any
+            const existingParams = $('#PackageParameters').val();
+            if (existingParams) {
+                try {
+                    const params = JSON.parse(existingParams);
+                    for (const [key, value] of Object.entries(params)) {
+                        addParameterRow(key, value);
+                    }
+                } catch (e) {
+                    console.error('Invalid JSON in PackageParameters', e);
+                }
+            }
+
+            // Add one empty row by default if no parameters exist
+            if ($('#parametersList .row').length === 0) {
+                addParameterRow();
+            }
         });
     </script>
 }

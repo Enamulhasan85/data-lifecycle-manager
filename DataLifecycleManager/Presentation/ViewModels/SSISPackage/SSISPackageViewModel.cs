@@ -15,6 +15,7 @@ namespace DataLifecycleManager.Presentation.ViewModels.SSISPackage
         public SSISPackageStatus Status { get; set; }
         public int TimeoutMinutes { get; set; }
         public string ServerAddress { get; set; } = string.Empty;
+        public string CatalogName { get; set; } = "SSISDB";
         public string? Username { get; set; }
         public bool UseWindowsAuthentication { get; set; }
         public string? PackageParameters { get; set; }
