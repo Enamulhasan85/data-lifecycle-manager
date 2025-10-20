@@ -14,6 +14,7 @@ namespace DataLifecycleManager.Application.Mappings
             // Entity to ViewModel mappings
             CreateMap<SSISPackage, SSISPackageViewModel>();
             CreateMap<SSISPackage, EditSSISPackageViewModel>();
+            CreateMap<SSISPackage, ExecuteSSISPackageViewModel>();
 
             // ViewModel to Entity mappings
             CreateMap<CreateSSISPackageViewModel, SSISPackage>()

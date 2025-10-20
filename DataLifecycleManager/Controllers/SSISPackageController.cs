@@ -233,36 +233,108 @@ public class SSISPackageController : Controller
         }
     }
 
+    // [HttpPost]
+    // public async Task<IActionResult> ExecutePackage(int id)
+    // {
+    //     try
+    //     {
+    //         var startTime = DateTime.UtcNow;
+    //         var (success, result) = await _ssisPackageService.ExecutePackageAsync(id);
+    //         var duration = (int)(DateTime.UtcNow - startTime).TotalSeconds;
+
+    //         if (!success)
+    //         {
+    //             return Json(new { success = false, message = result.ErrorMessage });
+    //         }
+
+    //         return Json(result.Success
+    //             ? new
+    //             {
+    //                 success = true,
+    //                 message = $"Package executed successfully! (ID: {result.ExecutionId}, Duration: {duration}s)",
+    //                 executionId = result.ExecutionId,
+    //                 status = result.Status,
+    //                 durationSeconds = duration
+    //             }
+    //             : new
+    //             {
+    //                 success = false,
+    //                 message = $"Execution failed: {result.ErrorMessage}",
+    //                 status = result.Status,
+    //                 logs = result.Logs
+    //             });
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError(ex, "Error executing SSIS package");
+    //         return Json(new { success = false, message = $"Error: {ex.Message}" });
+    //     }
+    // }
+
+
+    [HttpGet]
+    public async Task<IActionResult> Execute(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var package = await _ssisPackageService.GetByIdAsync(id.Value);
+        if (package == null) return NotFound();
+
+        var viewModel = new ExecuteSSISPackageViewModel
+        {
+            Id = package.Id,
+            PackageName = package.PackageName,
+            FolderName = package.FolderName,
+            ProjectName = package.ProjectName,
+            ServerAddress = package.ServerAddress,
+            CatalogName = package.CatalogName,
+            TimeoutMinutes = package.TimeoutMinutes,
+            Description = package.Description,
+            Parameters = string.IsNullOrWhiteSpace(package.PackageParameters)
+                ? new Dictionary<string, string>()
+                : System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(package.PackageParameters) ?? new Dictionary<string, string>()
+        };
+
+        return View(viewModel);
+    }
+
     [HttpPost]
-    public async Task<IActionResult> ExecutePackage(int id)
+    public async Task<IActionResult> ExecutePackageConfirmed(int id)
     {
         try
         {
+            var package = await _ssisPackageService.GetByIdAsync(id);
+            if (package == null)
+            {
+                return Json(new { success = false, message = "Package not found" });
+            }
+
             var startTime = DateTime.UtcNow;
             var (success, result) = await _ssisPackageService.ExecutePackageAsync(id);
             var duration = (int)(DateTime.UtcNow - startTime).TotalSeconds;
 
             if (!success)
             {
-                return Json(new { success = false, message = result.ErrorMessage });
-            }
-
-            return Json(result.Success
-                ? new
-                {
-                    success = true,
-                    message = $"Package executed successfully! (ID: {result.ExecutionId}, Duration: {duration}s)",
-                    executionId = result.ExecutionId,
-                    status = result.Status,
-                    durationSeconds = duration
-                }
-                : new
+                return Json(new
                 {
                     success = false,
-                    message = $"Execution failed: {result.ErrorMessage}",
-                    status = result.Status,
-                    logs = result.Logs
+                    message = result.ErrorMessage ?? "Execution failed",
+                    logs = result.Logs,
+                    status = result.Status
                 });
+            }
+
+            return Json(new
+            {
+                success = result.Success,
+                message = result.Success
+                    ? $"Package executed successfully! (Execution ID: {result.ExecutionId})"
+                    : result.ErrorMessage,
+                executionId = result.ExecutionId,
+                status = result.Status,
+                logs = result.Logs,
+                durationSeconds = duration
+            });
         }
         catch (Exception ex)
         {

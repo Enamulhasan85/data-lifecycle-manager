@@ -1,0 +1,247 @@
+@model DataLifecycleManager.Presentation.ViewModels.SSISPackage.ExecuteSSISPackageViewModel
+
+@{
+    ViewData["Title"] = "Execute SSIS Package";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-play-circle me-2 text-success"></i>Execute SSIS Package</h2>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+            </div>
+
+            <!-- Package Details Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Package Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-5"><i class="fas fa-box me-2 text-muted"></i>Package Name:</dt>
+                                <dd class="col-sm-7"><strong>@Model.PackageName</strong></dd>
+
+                                <dt class="col-sm-5"><i class="fas fa-folder me-2 text-muted"></i>Folder:</dt>
+                                <dd class="col-sm-7"><span class="badge bg-info">@Model.FolderName</span></dd>
+
+                                <dt class="col-sm-5"><i class="fas fa-project-diagram me-2 text-muted"></i>Project:</dt>
+                                <dd class="col-sm-7"><span class="badge bg-secondary">@Model.ProjectName</span></dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-5"><i class="fas fa-server me-2 text-muted"></i>Server:</dt>
+                                <dd class="col-sm-7">@Model.ServerAddress</dd>
+
+                                <dt class="col-sm-5"><i class="fas fa-database me-2 text-muted"></i>Catalog:</dt>
+                                <dd class="col-sm-7">@Model.CatalogName</dd>
+
+                                <dt class="col-sm-5"><i class="fas fa-clock me-2 text-muted"></i>Timeout:</dt>
+                                <dd class="col-sm-7">@Model.TimeoutMinutes minutes</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Description))
+                    {
+                        <hr />
+                        <div class="mt-3">
+                            <strong><i class="fas fa-file-alt me-2 text-muted"></i>Description:</strong>
+                            <p class="text-muted mt-2">@Model.Description</p>
+                        </div>
+                    }
+
+                    @if (Model.Parameters.Any())
+                    {
+                        <hr />
+                        <div class="mt-3">
+                            <strong><i class="fas fa-sliders-h me-2 text-muted"></i>Configured Parameters:</strong>
+                            <div class="table-responsive mt-2">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Parameter Name</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var param in Model.Parameters)
+                                        {
+                                            <tr>
+                                                <td><code>@param.Key</code></td>
+                                                <td>
+                                                    <span>@param.Value</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Execution Control Card -->
+            <div class="card shadow-sm mb-4" id="executionCard">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-terminal me-2"></i>Execution Control</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div id="preExecutionContent">
+                        <p class="lead mb-4">
+                            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                            Ready to execute <strong>@Model.PackageName</strong>?
+                        </p>
+                        <p class="text-muted mb-4">
+                            This will start the SSIS package execution with the configured parameters.
+                            The process may take several minutes depending on the package complexity.
+                        </p>
+                        <button type="button" class="btn btn-success btn-lg px-5" id="btnExecute">
+                            <i class="fas fa-play me-2"></i>Execute Package
+                        </button>
+                    </div>
+
+                    <div id="executionProgress" class="mt-3" style="display: none;">
+                        <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5 class="text-success mb-2">Package Executing...</h5>
+                        <p class="text-muted">Please wait while the package is being executed.</p>
+                        <div class="progress mb-3" style="height: 25px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                role="progressbar" style="width: 100%">
+                                Processing...
+                            </div>
+                        </div>
+                        <small class="text-muted">Execution started at: <span id="executionStartTime"></span></small>
+                    </div>
+
+                    <div id="executionResult" class="mt-3" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Execution Logs Card -->
+            <div class="card shadow-sm" id="logsCard" style="display: none;">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Execution Logs</h5>
+                    <button type="button" class="btn btn-sm btn-outline-light" id="btnCopyLogs">
+                        <i class="fas fa-copy me-1"></i>Copy Logs
+                    </button>
+                </div>
+                <div class="card-body bg-light">
+                    <pre id="executionLogs" class="mb-0 p-3 bg-dark text-white rounded"
+                        style="max-height: 400px; overflow-y: auto; font-size: 0.85rem; line-height: 1.4;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#btnExecute').click(function () {
+                if (!confirm('Are you sure you want to execute this SSIS package?')) {
+                    return;
+                }
+
+                const $btn = $(this);
+                const packageId = @Model.Id;
+                const startTime = new Date();
+
+                $('#executionStartTime').text(startTime.toLocaleTimeString());
+                $('#preExecutionContent').hide();
+                $('#executionProgress').show();
+                $('#logsCard').hide();
+
+                $.ajax({
+                    url: '@Url.Action("ExecutePackageConfirmed", "SSISPackage")',
+                    type: 'POST',
+                    data: { id: packageId },
+                    success: function (response) {
+                        $('#executionProgress').hide();
+
+                        if (response.success) {
+                            const duration = response.durationSeconds || 0;
+                            $('#executionResult').html(`
+                                                        <div class="alert alert-success alert-dismissible fade show">
+                                                            <i class="fas fa-check-circle fa-2x mb-3"></i>
+                                                            <h5>Execution Successful!</h5>
+                                                            <p class="mb-2">${response.message}</p>
+                                                            <hr/>
+                                                            <div class="row text-start">
+                                                                <div class="col-md-6">
+                                                                    <small><strong>Execution ID:</strong> ${response.executionId}</small>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <small><strong>Status:</strong> <span class="badge bg-success">${response.status}</span></small>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <small><strong>Duration:</strong> ${duration} seconds</small>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <small><strong>Completed:</strong> ${new Date().toLocaleString()}</small>
+                                                                </div>
+                                                            </div>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                                        </div>
+                                                    `).show();
+
+                            toastr.success('Package executed successfully!', 'Success');
+                        } else {
+
+                            $('#preExecutionContent').show();
+                            $('#executionResult').html(`
+                                                        <div class="alert alert-danger alert-dismissible fade show">
+                                                            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                                                            <h5>Execution Failed</h5>
+                                                            <p class="mb-2">${response.message || 'Package execution failed'}</p>
+                                                            ${response.status ? `<p><strong>Status:</strong> <span class="badge bg-danger">${response.status}</span></p>` : ''}
+                                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                                        </div>
+                                                    `).show();
+
+                            toastr.error(response.message || 'Package execution failed', 'Error');
+                        }
+
+                        if (response.logs) {
+                            $('#executionLogs').text(response.logs);
+                            $('#logsCard').show();
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        $('#executionProgress').hide();
+                        $('#executionResult').html(`
+                                                    <div class="alert alert-danger alert-dismissible fade show">
+                                                        <i class="fas fa-times-circle fa-2x mb-3"></i>
+                                                        <h5>Error</h5>
+                                                        <p>An error occurred while executing the package.</p>
+                                                        <p class="text-muted small">${error}</p>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                                    </div>
+                                                `).show();
+                        $('#preExecutionContent').show();
+
+                        toastr.error('Error executing package', 'Error');
+                    }
+                });
+            });
+
+            $('#btnCopyLogs').click(function () {
+                const logs = $('#executionLogs').text();
+                navigator.clipboard.writeText(logs).then(function () {
+                    toastr.success('Logs copied to clipboard!', 'Success');
+                }, function () {
+                    toastr.error('Failed to copy logs', 'Error');
+                });
+            });
+        });
+    </script>
+}
