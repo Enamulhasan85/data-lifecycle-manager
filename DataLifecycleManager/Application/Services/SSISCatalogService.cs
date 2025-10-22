@@ -251,4 +251,173 @@ public class SSISCatalogService : ISSISCatalogService
             };
         }
     }
+
+    public async Task<CatalogExecutionResultDto> StartExecutionAsync(
+        string serverAddress,
+        string catalogName,
+        bool useWindowsAuth,
+        string? username,
+        string? password,
+        string folderName,
+        string projectName,
+        string packageName,
+        Dictionary<string, object>? parameters)
+    {
+        var logs = new StringBuilder();
+
+        try
+        {
+            var connectionString = useWindowsAuth
+                ? $"Server={serverAddress};Database={catalogName};Integrated Security=true;TrustServerCertificate=true;"
+                : $"Server={serverAddress};Database={catalogName};User ID={username};Password={password};TrustServerCertificate=true;";
+
+            logs.AppendLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Connecting to {catalogName} catalog");
+
+            var folder = await _catalogRepository.GetFolderAsync(connectionString, catalogName, folderName);
+            if (folder == null)
+            {
+                var errorMsg = $"Folder '{folderName}' not found in {catalogName} catalog";
+                logs.AppendLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] ERROR: {errorMsg}");
+                return new CatalogExecutionResultDto
+                {
+                    Success = false,
+                    ExecutionId = 0,
+                    Status = "Error",
+                    Logs = logs.ToString(),
+                    ErrorMessage = errorMsg
+                };
+            }
+
+            var project = await _catalogRepository.GetProjectAsync(connectionString, catalogName, folder.FolderId, projectName);
+            if (project == null)
+            {
+                var errorMsg = $"Project '{projectName}' not found in folder '{folderName}'";
+                logs.AppendLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] ERROR: {errorMsg}");
+                return new CatalogExecutionResultDto
+                {
+                    Success = false,
+                    ExecutionId = 0,
+                    Status = "Error",
+                    Logs = logs.ToString(),
+                    ErrorMessage = errorMsg
+                };
+            }
+
+            logs.AppendLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Connected to {catalogName} catalog");
+
+            var executionId = await _catalogRepository.CreateExecutionAsync(connectionString, catalogName, project.ProjectId, packageName);
+            logs.AppendLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Execution created with ID: {executionId}");
+
+            if (parameters != null && parameters.Any())
+            {
+                foreach (var param in parameters)
+                {
+                    await _catalogRepository.SetExecutionParameterAsync(connectionString, executionId, param.Key, param.Value ?? "");
+
+                    var logValue = param.Key.Contains("Password", StringComparison.OrdinalIgnoreCase)
+                        ? "********"
+                        : param.Value?.ToString();
+                    logs.AppendLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Parameter set: {param.Key} = {logValue}");
+                }
+            }
+
+            await _catalogRepository.StartExecutionAsync(connectionString, executionId);
+            logs.AppendLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Execution started");
+
+            _logger.LogInformation("Package execution started with ID: {ExecutionId}", executionId);
+
+            return new CatalogExecutionResultDto
+            {
+                Success = true,
+                ExecutionId = executionId,
+                Status = "Running",
+                Logs = logs.ToString()
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error starting package execution");
+            logs.AppendLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] ERROR: {ex.Message}");
+            return new CatalogExecutionResultDto
+            {
+                Success = false,
+                ExecutionId = 0,
+                Status = "Error",
+                Logs = logs.ToString(),
+                ErrorMessage = ex.Message
+            };
+        }
+    }
+
+    public async Task<CatalogExecutionResultDto> GetExecutionStatusAsync(
+        string serverAddress,
+        string catalogName,
+        bool useWindowsAuth,
+        string? username,
+        string? password,
+        long executionId)
+    {
+        try
+        {
+            var connectionString = useWindowsAuth
+                ? $"Server={serverAddress};Database={catalogName};Integrated Security=true;TrustServerCertificate=true;"
+                : $"Server={serverAddress};Database={catalogName};User ID={username};Password={password};TrustServerCertificate=true;";
+
+            var executionModel = await _catalogRepository.GetExecutionStatusAsync(connectionString, executionId);
+
+            if (executionModel == null)
+            {
+                return new CatalogExecutionResultDto
+                {
+                    Success = false,
+                    ExecutionId = executionId,
+                    Status = "Unknown",
+                    ErrorMessage = "Execution not found in catalog"
+                };
+            }
+
+            var status = executionModel.Status.ToDisplayString();
+            var success = status == SSISExecutionStatus.Succeeded.ToDisplayString();
+
+            // Build logs from messages
+            var logs = new StringBuilder();
+            logs.AppendLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Current status: {status}");
+            
+            if (executionModel.StartTime.HasValue)
+                logs.AppendLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Started: {executionModel.StartTime.Value:yyyy-MM-dd HH:mm:ss}");
+            
+            if (executionModel.EndTime.HasValue)
+                logs.AppendLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] Ended: {executionModel.EndTime.Value:yyyy-MM-dd HH:mm:ss}");
+            
+            // Add execution messages
+            if (executionModel.Messages.Any())
+            {
+                logs.AppendLine($"\n--- Execution Messages ({executionModel.Messages.Count}) ---");
+                foreach (var message in executionModel.Messages)
+                {
+                    logs.AppendLine(message);
+                }
+            }
+
+            return new CatalogExecutionResultDto
+            {
+                Success = success,
+                ExecutionId = executionId,
+                Status = status,
+                Logs = logs.ToString(),
+                ErrorMessage = executionModel.ErrorMessage
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving execution status for ID: {ExecutionId}", executionId);
+            return new CatalogExecutionResultDto
+            {
+                Success = false,
+                ExecutionId = executionId,
+                Status = "Error",
+                ErrorMessage = ex.Message
+            };
+        }
+    }
 }

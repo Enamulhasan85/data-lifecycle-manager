@@ -38,12 +38,12 @@ namespace DataLifecycleManager.Infrastructure.Data.Repositories
             params Expression<Func<T, object>>[] includes)
         {
             var query = _dbSet.AsQueryable();
-            
+
             foreach (var include in includes)
             {
                 query = query.Include(include);
             }
-            
+
             return await query.Where(predicate).ToListAsync(cancellationToken);
         }
 
@@ -53,12 +53,12 @@ namespace DataLifecycleManager.Infrastructure.Data.Repositories
             params Expression<Func<T, object>>[] includes)
         {
             var query = _dbSet.AsQueryable();
-            
+
             foreach (var include in includes)
             {
                 query = query.Include(include);
             }
-            
+
             return await query.FirstOrDefaultAsync(predicate, cancellationToken);
         }
 
@@ -73,49 +73,6 @@ namespace DataLifecycleManager.Infrastructure.Data.Repositories
                 return await _dbSet.CountAsync(cancellationToken);
 
             return await _dbSet.CountAsync(predicate, cancellationToken);
-        }
-
-        public async Task<PaginatedResult<T>> GetPaginatedAsync(
-            int page,
-            int pageSize,
-            Expression<Func<T, bool>>? predicate = null,
-            Expression<Func<T, object>>? orderBy = null,
-            bool orderByDescending = false,
-            CancellationToken cancellationToken = default,
-            params Expression<Func<T, object>>[] includes)
-        {
-            var query = _dbSet.AsQueryable();
-
-            // Apply filter FIRST (most important for performance)
-            if (predicate != null)
-                query = query.Where(predicate);
-
-            // Get total count BEFORE includes (much faster)
-            var totalCount = await query.CountAsync(cancellationToken);
-
-            // Apply ordering BEFORE includes
-            if (orderBy != null)
-            {
-                query = orderByDescending
-                    ? query.OrderByDescending(orderBy)
-                    : query.OrderBy(orderBy);
-            }
-
-            // Apply pagination BEFORE includes
-            query = query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize);
-
-            // Apply includes LAST (only for the final result set)
-            foreach (var include in includes)
-            {
-                query = query.Include(include);
-            }
-
-            // Execute the final query
-            var items = await query.ToListAsync(cancellationToken);
-
-            return new PaginatedResult<T>(items, totalCount, page, pageSize);
         }
 
         public async Task<PaginatedResult<TResult>> GetPaginatedAsync<TResult>(

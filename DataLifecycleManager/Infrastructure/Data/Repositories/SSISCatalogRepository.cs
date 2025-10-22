@@ -275,7 +275,17 @@ public class SSISCatalogRepository : ISSISCatalogRepository
             await connection.OpenAsync();
 
             using var cmd = new SqlCommand(
-                "SELECT execution_id, status FROM [catalog].[executions] WHERE execution_id = @execution_id",
+                @"SELECT 
+                    execution_id, 
+                    status, 
+                    start_time, 
+                    end_time,
+                    (SELECT TOP 1 message FROM [catalog].[operation_messages] 
+                     WHERE operation_id = execution_id 
+                     AND message_type IN (120, 130) -- Error messages
+                     ORDER BY message_time DESC) as error_message
+                  FROM [catalog].[executions] 
+                  WHERE execution_id = @execution_id",
                 connection);
 
             cmd.Parameters.AddWithValue("@execution_id", executionId);
@@ -283,11 +293,19 @@ public class SSISCatalogRepository : ISSISCatalogRepository
             using var reader = await cmd.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {
-                return new SSISExecutionModel
+                var model = new SSISExecutionModel
                 {
                     ExecutionId = reader.GetInt64(0),
-                    Status = (SSISExecutionStatus)reader.GetInt32(1)
+                    Status = (SSISExecutionStatus)reader.GetInt32(1),
+                    StartTime = reader.IsDBNull(2) ? null : reader.GetDateTimeOffset(2).UtcDateTime,
+                    EndTime = reader.IsDBNull(3) ? null : reader.GetDateTimeOffset(3).UtcDateTime,
+                    ErrorMessage = reader.IsDBNull(4) ? null : reader.GetString(4)
                 };
+
+                // Get execution messages
+                model.Messages = await GetExecutionMessagesAsync(connectionString, executionId);
+
+                return model;
             }
 
             return null;
@@ -296,6 +314,74 @@ public class SSISCatalogRepository : ISSISCatalogRepository
         {
             _logger.LogError(ex, "Error getting execution status for execution ID {ExecutionId}", executionId);
             throw;
+        }
+    }
+
+    public async Task<List<string>> GetExecutionMessagesAsync(string connectionString, long executionId)
+    {
+        var messages = new List<string>();
+
+        try
+        {
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            using var cmd = new SqlCommand(
+                @"SELECT 
+                    message_time,
+                    message_type,
+                    message_source_type,
+                    message
+                  FROM [catalog].[operation_messages]
+                  WHERE operation_id = @execution_id
+                    AND message_type IN (50,60,70,80,90,100,110,120,130)
+                  ORDER BY message_time ASC",
+                connection);
+
+            cmd.Parameters.AddWithValue("@execution_id", executionId);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var messageTime = reader.GetDateTimeOffset(0).ToString("yyyy-MM-dd HH:mm:ss");
+                var messageType = reader.GetInt16(1);
+                var messageSourceType = reader.IsDBNull(2) ? 0 : reader.GetInt16(2);
+                var message = reader.IsDBNull(3) ? "" : reader.GetString(3);
+
+                // Format message type for readability
+                var messageTypeStr = messageType switch
+                {
+                    120 => "ERROR",
+                    110 => "WARNING",
+                    70 => "INFORMATION",
+                    10 => "PRE-VALIDATE",
+                    20 => "POST-VALIDATE",
+                    30 => "PRE-EXECUTE",
+                    40 => "POST-EXECUTE",
+                    50 => "STATUSCHANGE",
+                    60 => "PROGRESS",
+                    80 => "QUERYCANCEL",
+                    90 => "TASKFAILED",
+                    100 => "DIAGNOSTIC",
+                    130 => "DIAGERROR",
+                    _ => $"TYPE_{messageType}"
+                };
+
+                // Build formatted message
+                var formattedMessage = $"[{messageTime}] [{messageTypeStr}]";
+                formattedMessage += $" {message}";
+                formattedMessage += $" [{messageSourceType}]";
+
+                messages.Add(formattedMessage);
+            }
+
+            return messages;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting execution messages for execution ID {ExecutionId}", executionId);
+            // Return empty list instead of throwing to allow execution to continue
+            return messages;
         }
     }
 }

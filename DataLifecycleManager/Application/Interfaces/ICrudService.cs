@@ -1,5 +1,5 @@
-using DataLifecycleManager.Application.DTOs.Common;
 using System.Linq.Expressions;
+using DataLifecycleManager.Application.DTOs.Common;
 
 namespace DataLifecycleManager.Application.Interfaces;
 
@@ -15,10 +15,10 @@ public interface ICrudService<TEntity, TKey>
 
     // Query operations
     Task<IEnumerable<TEntity>> FindAsync(
-        Expression<Func<TEntity, bool>> predicate, 
+        Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default,
         params Expression<Func<TEntity, object>>[] includes);
-    
+
     Task<TEntity?> FirstOrDefaultAsync(
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default,
@@ -26,16 +26,6 @@ public interface ICrudService<TEntity, TKey>
 
     Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
     Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null, CancellationToken cancellationToken = default);
-
-    // Pagination
-    Task<PaginatedResult<TEntity>> GetPaginatedAsync(
-        int page,
-        int pageSize,
-        Expression<Func<TEntity, bool>>? predicate = null,
-        Expression<Func<TEntity, object>>? orderBy = null,
-        bool orderByDescending = false,
-        CancellationToken cancellationToken = default,
-        params Expression<Func<TEntity, object>>[] includes);
 
     Task<PaginatedResult<TResult>> GetPaginatedAsync<TResult>(
         int page,

@@ -270,36 +270,30 @@ public class SSISPackageController : Controller
                 return Json(new { success = false, message = "Package not found" });
             }
 
-            var startTime = DateTime.UtcNow;
-            var (success, result) = await _ssisPackageService.ExecutePackageAsync(id);
-            var duration = (int)(DateTime.UtcNow - startTime).TotalSeconds;
+            var executedBy = User.Identity?.Name ?? "Anonymous";
+            var (success, executionRecordId, catalogExecutionId, errorMessage) = 
+                await _ssisPackageService.StartPackageExecutionAsync(id, executedBy);
 
             if (!success)
             {
                 return Json(new
                 {
                     success = false,
-                    message = result.ErrorMessage ?? "Execution failed",
-                    logs = result.Logs,
-                    status = result.Status
+                    message = errorMessage ?? "Failed to start execution"
                 });
             }
 
             return Json(new
             {
-                success = result.Success,
-                message = result.Success
-                    ? $"Package executed successfully! (Execution ID: {result.ExecutionId})"
-                    : result.ErrorMessage,
-                executionId = result.ExecutionId,
-                status = result.Status,
-                logs = result.Logs,
-                durationSeconds = duration
+                success = true,
+                message = $"Package execution started successfully! (Execution ID: {catalogExecutionId})",
+                executionRecordId = executionRecordId,
+                catalogExecutionId = catalogExecutionId
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error executing SSIS package");
+            _logger.LogError(ex, "Error starting SSIS package execution");
             return Json(new { success = false, message = $"Error: {ex.Message}" });
         }
     }

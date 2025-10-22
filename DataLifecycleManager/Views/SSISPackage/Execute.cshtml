@@ -100,8 +100,8 @@
                             Ready to execute <strong>@Model.PackageName</strong>?
                         </p>
                         <p class="text-muted mb-4">
-                            This will start the SSIS package execution with the configured parameters.
-                            The process may take several minutes depending on the package complexity.
+                            This will start the SSIS package execution in the background.
+                            You can monitor progress on the execution details page.
                         </p>
                         <button type="button" class="btn btn-success btn-lg px-5" id="btnExecute">
                             <i class="fas fa-play me-2"></i>Execute Package
@@ -112,34 +112,15 @@
                         <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
-                        <h5 class="text-success mb-2">Package Executing...</h5>
-                        <p class="text-muted">Please wait while the package is being executed.</p>
-                        <div class="progress mb-3" style="height: 25px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                                role="progressbar" style="width: 100%">
-                                Processing...
-                            </div>
-                        </div>
-                        <small class="text-muted">Execution started at: <span id="executionStartTime"></span></small>
+                        <h5 class="text-success mb-2">Starting Execution...</h5>
+                        <p class="text-muted">Please wait while the package execution is being initiated.</p>
                     </div>
 
                     <div id="executionResult" class="mt-3" style="display: none;"></div>
                 </div>
             </div>
 
-            <!-- Execution Logs Card -->
-            <div class="card shadow-sm" id="logsCard" style="display: none;">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Execution Logs</h5>
-                    <button type="button" class="btn btn-sm btn-outline-light" id="btnCopyLogs">
-                        <i class="fas fa-copy me-1"></i>Copy Logs
-                    </button>
-                </div>
-                <div class="card-body bg-light">
-                    <pre id="executionLogs" class="mb-0 p-3 bg-dark text-white rounded"
-                        style="max-height: 400px; overflow-y: auto; font-size: 0.85rem; line-height: 1.4;"></pre>
-                </div>
-            </div>
+
         </div>
     </div>
 </div>
@@ -169,77 +150,63 @@
                         $('#executionProgress').hide();
 
                         if (response.success) {
-                            const duration = response.durationSeconds || 0;
                             $('#executionResult').html(`
-                                                        <div class="alert alert-success alert-dismissible fade show">
-                                                            <i class="fas fa-check-circle fa-2x mb-3"></i>
-                                                            <h5>Execution Successful!</h5>
-                                                            <p class="mb-2">${response.message}</p>
-                                                            <hr/>
-                                                            <div class="row text-start">
-                                                                <div class="col-md-6">
-                                                                    <small><strong>Execution ID:</strong> ${response.executionId}</small>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <small><strong>Status:</strong> <span class="badge bg-success">${response.status}</span></small>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <small><strong>Duration:</strong> ${duration} seconds</small>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <small><strong>Completed:</strong> ${new Date().toLocaleString()}</small>
-                                                                </div>
-                                                            </div>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                                        </div>
-                                                    `).show();
+                                        <div class="alert alert-success alert-dismissible fade show">
+                                            <i class="fas fa-check-circle fa-2x mb-3"></i>
+                                            <h5>Execution Started Successfully!</h5>
+                                            <p class="mb-2">${response.message}</p>
+                                            <hr/>
+                                            <div class="row text-start">
+                                                <div class="col-md-6">
+                                                    <small><strong>Catalog Execution ID:</strong> ${response.catalogExecutionId}</small>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <small><strong>Started:</strong> ${new Date().toLocaleString()}</small>
+                                                </div>
+                                            </div>
+                                            <hr/>
+                                            <div class="text-center mt-3">
+                                                <a href="/SSISPackageExecution/Details/${response.executionRecordId}" target="_blank" class="btn btn-primary">
+                                                    <i class="fas fa-eye me-2"></i>View Execution Details
+                                                </a>
+                                                <a href="/SSISPackageExecution" class="btn btn-outline-secondary">
+                                                    <i class="fas fa-list me-2"></i>View All Executions
+                                                </a>
+                                            </div>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                                    `).show();
 
-                            toastr.success('Package executed successfully!', 'Success');
+                            toastr.success('Package execution started successfully!', 'Success');
                         } else {
-
                             $('#preExecutionContent').show();
                             $('#executionResult').html(`
-                                                        <div class="alert alert-danger alert-dismissible fade show">
-                                                            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
-                                                            <h5>Execution Failed</h5>
-                                                            <p class="mb-2">${response.message || 'Package execution failed'}</p>
-                                                            ${response.status ? `<p><strong>Status:</strong> <span class="badge bg-danger">${response.status}</span></p>` : ''}
-                                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                                        </div>
-                                                    `).show();
+                                            <div class="alert alert-danger alert-dismissible fade show">
+                                                <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                                                <h5>Failed to Start Execution</h5>
+                                                <p class="mb-2">${response.message || 'Package execution failed to start'}</p>
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                            </div>
+                                        `).show();
 
-                            toastr.error(response.message || 'Package execution failed', 'Error');
-                        }
-
-                        if (response.logs) {
-                            $('#executionLogs').text(response.logs);
-                            $('#logsCard').show();
+                            toastr.error(response.message || 'Failed to start execution', 'Error');
                         }
                     },
                     error: function (xhr, status, error) {
                         $('#executionProgress').hide();
                         $('#executionResult').html(`
-                                                    <div class="alert alert-danger alert-dismissible fade show">
-                                                        <i class="fas fa-times-circle fa-2x mb-3"></i>
-                                                        <h5>Error</h5>
-                                                        <p>An error occurred while executing the package.</p>
-                                                        <p class="text-muted small">${error}</p>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                                    </div>
-                                                `).show();
+                                                                    <div class="alert alert-danger alert-dismissible fade show">
+                                                                        <i class="fas fa-times-circle fa-2x mb-3"></i>
+                                                                        <h5>Error</h5>
+                                                                        <p>An error occurred while executing the package.</p>
+                                                                        <p class="text-muted small">${error}</p>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                                                    </div>
+                                                                `).show();
                         $('#preExecutionContent').show();
 
-                        toastr.error('Error executing package', 'Error');
+                        toastr.error('Error starting execution', 'Error');
                     }
-                });
-            });
-
-            $('#btnCopyLogs').click(function () {
-                const logs = $('#executionLogs').text();
-                navigator.clipboard.writeText(logs).then(function () {
-                    toastr.success('Logs copied to clipboard!', 'Success');
-                }, function () {
-                    toastr.error('Failed to copy logs', 'Error');
                 });
             });
         });

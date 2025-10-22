@@ -1,6 +1,6 @@
+using System.Linq.Expressions;
 using DataLifecycleManager.Application.DTOs.Common;
 using DataLifecycleManager.Application.Interfaces;
-using System.Linq.Expressions;
 
 namespace DataLifecycleManager.Application.Services;
 
@@ -62,7 +62,7 @@ public class CrudService<TEntity, TKey> : ICrudService<TEntity, TKey>
     #region Query Operations
 
     public async Task<IEnumerable<TEntity>> FindAsync(
-        Expression<Func<TEntity, bool>> predicate, 
+        Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default,
         params Expression<Func<TEntity, object>>[] includes)
     {
@@ -90,30 +90,6 @@ public class CrudService<TEntity, TKey> : ICrudService<TEntity, TKey>
     #endregion
 
     #region Pagination
-
-    public async Task<PaginatedResult<TEntity>> GetPaginatedAsync(
-        int page,
-        int pageSize,
-        Expression<Func<TEntity, bool>>? predicate = null,
-        Expression<Func<TEntity, object>>? orderBy = null,
-        bool orderByDescending = false,
-        CancellationToken cancellationToken = default,
-        params Expression<Func<TEntity, object>>[] includes)
-    {
-        if (page <= 0)
-            throw new ArgumentException("Page must be greater than 0", nameof(page));
-        if (pageSize <= 0)
-            throw new ArgumentException("Page size must be greater than 0", nameof(pageSize));
-
-        return await _repository.GetPaginatedAsync(
-            page,
-            pageSize,
-            predicate,
-            orderBy,
-            orderByDescending,
-            cancellationToken,
-            includes);
-    }
 
     public async Task<PaginatedResult<TResult>> GetPaginatedAsync<TResult>(
         int page,

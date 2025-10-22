@@ -12,4 +12,5 @@ public interface ISSISCatalogRepository
     Task SetExecutionParameterAsync(string connectionString, long executionId, string parameterName, object value);
     Task StartExecutionAsync(string connectionString, long executionId);
     Task<SSISExecutionModel?> GetExecutionStatusAsync(string connectionString, long executionId);
+    Task<List<string>> GetExecutionMessagesAsync(string connectionString, long executionId);
 }

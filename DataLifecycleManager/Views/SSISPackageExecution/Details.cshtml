@@ -1,0 +1,385 @@
+@model DataLifecycleManager.Presentation.ViewModels.SSISPackageExecution.ExecutionDetailsViewModel
+
+@{
+    ViewData["Title"] = "Execution Details";
+    var statusBadgeClass = Model.Status switch
+    {
+        "Succeeded" => "bg-success",
+        "Failed" => "bg-danger",
+        "Running" => "bg-primary",
+        "Pending" => "bg-warning text-dark",
+        "Cancelled" => "bg-secondary",
+        "Timeout" => "bg-warning text-dark",
+        _ => "bg-secondary"
+    };
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-info-circle me-2 text-primary"></i>Execution Details</h2>
+                <div>
+                    <a asp-action="Index" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                    @if (Model.IsRunning)
+                    {
+                        <button type="button" class="btn btn-primary" id="btnRefreshStatus">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh Status
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Status Alert -->
+            <div id="statusAlert">
+                @if (Model.IsRunning)
+                {
+                    <div class="alert alert-primary">
+                        <i class="fas fa-spinner fa-spin me-2"></i>
+                        <strong>Execution In Progress</strong> - Status will auto-refresh every 5 seconds.
+                    </div>
+                }
+                else if (Model.IsSuccessful)
+                {
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Execution Completed Successfully</strong>
+                    </div>
+                }
+                else if (Model.Status == "Failed")
+                {
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times-circle me-2"></i>
+                        <strong>Execution Failed</strong>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Status: @Model.Status</strong>
+                    </div>
+                }
+            </div>
+
+            <!-- Execution Summary Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Execution Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-5"><i class="fas fa-hashtag me-2 text-muted"></i>Execution ID:</dt>
+                                <dd class="col-sm-7"><strong>#@Model.Id</strong></dd>
+
+                                <dt class="col-sm-5"><i class="fas fa-database me-2 text-muted"></i>Catalog Execution
+                                    ID:</dt>
+                                <dd class="col-sm-7">
+                                    @if (Model.CatalogExecutionId.HasValue)
+                                    {
+                                        <strong>@Model.CatalogExecutionId</strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not assigned</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-5"><i class="fas fa-flag me-2 text-muted"></i>Status:</dt>
+                                <dd class="col-sm-7">
+                                    <span class="badge @statusBadgeClass" id="currentStatus">@Model.Status</span>
+                                </dd>
+
+                                <dt class="col-sm-5"><i class="fas fa-user me-2 text-muted"></i>Executed By:</dt>
+                                <dd class="col-sm-7">@(Model.ExecutedBy ?? "Unknown")</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-5"><i class="fas fa-play-circle me-2 text-muted"></i>Start Time:</dt>
+                                <dd class="col-sm-7" id="startTime">
+                                    @if (Model.StartTime.HasValue)
+                                    {
+                                        @Model.StartTime.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not started</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-5"><i class="fas fa-stop-circle me-2 text-muted"></i>End Time:</dt>
+                                <dd class="col-sm-7" id="endTime">
+                                    @if (Model.EndTime.HasValue)
+                                    {
+                                        @Model.EndTime.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-5"><i class="fas fa-clock me-2 text-muted"></i>Duration:</dt>
+                                <dd class="col-sm-7" id="duration">
+                                    @if (Model.DurationSeconds.HasValue)
+                                    {
+                                        var duration = TimeSpan.FromSeconds(Model.DurationSeconds.Value);
+                                        <span>@duration.ToString(@"hh\:mm\:ss") (@Model.DurationSeconds seconds)</span>
+                                    }
+                                    else if (Model.IsRunning && Model.StartTime.HasValue)
+                                    {
+                                        <span class="text-primary">
+                                            <i class="fas fa-spinner fa-spin me-1"></i>In Progress
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-5"><i class="fas fa-calendar me-2 text-muted"></i>Created At:</dt>
+                                <dd class="col-sm-7">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Package Information Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-box me-2"></i>Package Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-5">Package Name:</dt>
+                                <dd class="col-sm-7"><strong>@Model.PackageName</strong></dd>
+
+                                <dt class="col-sm-5">Folder:</dt>
+                                <dd class="col-sm-7"><span class="badge bg-info">@Model.FolderName</span></dd>
+
+                                <dt class="col-sm-5">Project:</dt>
+                                <dd class="col-sm-7"><span class="badge bg-secondary">@Model.ProjectName</span></dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-5">Server:</dt>
+                                <dd class="col-sm-7">@Model.ServerAddress</dd>
+
+                                <dt class="col-sm-5">Catalog:</dt>
+                                <dd class="col-sm-7">@Model.CatalogName</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parameters Card (if any) -->
+            @if (Model.ExecutionParameters.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Execution Parameters</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Parameter Name</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var param in Model.ExecutionParameters)
+                                    {
+                                        <tr>
+                                            <td><code>@param.Key</code></td>
+                                            <td>
+                                                <span>@param.Value</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Error Message (if failed) -->
+            @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+            {
+                <div class="card shadow-sm mb-4 border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Error Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre class="mb-0 text-danger">@Model.ErrorMessage</pre>
+                    </div>
+                </div>
+            }
+
+            <!-- Execution Logs Card -->
+            @if (!string.IsNullOrWhiteSpace(Model.ExecutionLogs))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Execution Logs</h5>
+                        <button type="button" class="btn btn-sm btn-outline-light" id="btnCopyLogs">
+                            <i class="fas fa-copy me-1"></i>Copy Logs
+                        </button>
+                    </div>
+                    <div class="card-body bg-light">
+                        <pre id="executionLogs" class="mb-0 p-3 bg-dark text-white rounded"
+                            style="max-height: 400px; overflow-y: auto; font-size: 0.85rem; line-height: 1.4;">@Model.ExecutionLogs</pre>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var executionId = @Model.Id;
+            var isRunning = @Model.IsRunning.ToString().ToLower();
+            var autoRefreshInterval;
+
+            function updateStatus() {
+                $.ajax({
+                    url: '@Url.Action("UpdateStatus", "SSISPackageExecution")',
+                    type: 'POST',
+                    data: { id: executionId },
+                    success: function (response) {
+                        if (response.success) {
+                            // Update status badge
+                            var badgeClass = getStatusBadgeClass(response.status);
+                            $('#currentStatus').removeClass().addClass('badge ' + badgeClass).text(response.status);
+
+                            // Update end time
+                            if (response.endTime) {
+                                $('#endTime').html(response.endTime);
+                            }
+
+                            // Update duration
+                            if (response.durationSeconds) {
+                                var duration = formatDuration(response.durationSeconds);
+                                $('#duration').html('<span>' + duration + ' (' + response.durationSeconds + ' seconds)</span>');
+                            }
+
+                            // Update logs
+                            if (response.executionLogs) {
+                                $('#executionLogs').text(response.executionLogs);
+                            }
+
+                            // Update alert
+                            if (!response.isRunning) {
+                                clearInterval(autoRefreshInterval);
+
+                                if (response.isSuccessful) {
+                                    $('#statusAlert').html(`
+                                                <div class="alert alert-success">
+                                                    <i class="fas fa-check-circle me-2"></i>
+                                                    <strong>Execution Completed Successfully</strong>
+                                                </div>
+                                            `);
+                                    toastr.success('Execution completed successfully!', 'Success');
+                                } else {
+                                    $('#statusAlert').html(`
+                                                <div class="alert alert-danger">
+                                                    <i class="fas fa-times-circle me-2"></i>
+                                                    <strong>Execution Failed</strong>
+                                                </div>
+                                            `);
+                                    toastr.error('Execution failed', 'Error');
+                                }
+
+                                // Hide refresh button
+                                $('#btnRefreshStatus').hide();
+                            }
+
+                            // Show error if any
+                            if (response.errorMessage && !$('.border-danger').length) {
+                                var errorCard = `
+                                            <div class="card shadow-sm mb-4 border-danger">
+                                                <div class="card-header bg-danger text-white">
+                                                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Error Details</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <pre class="mb-0 text-danger">${response.errorMessage}</pre>
+                                                </div>
+                                            </div>
+                                        `;
+                                $('#executionLogs').closest('.card').before(errorCard);
+                            }
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error updating status:', error);
+                    }
+                });
+            }
+
+            function getStatusBadgeClass(status) {
+                switch (status) {
+                    case 'Succeeded': return 'bg-success';
+                    case 'Failed': return 'bg-danger';
+                    case 'Running': return 'bg-primary';
+                    case 'Pending': return 'bg-warning text-dark';
+                    case 'Cancelled': return 'bg-secondary';
+                    case 'Timeout': return 'bg-warning text-dark';
+                    default: return 'bg-secondary';
+                }
+            }
+
+            function formatDuration(seconds) {
+                var hours = Math.floor(seconds / 3600);
+                var minutes = Math.floor((seconds % 3600) / 60);
+                var secs = seconds % 60;
+
+                if (hours > 0) {
+                    return String(hours).padStart(2, '0') + ':' +
+                        String(minutes).padStart(2, '0') + ':' +
+                        String(secs).padStart(2, '0');
+                } else {
+                    return String(minutes).padStart(2, '0') + ':' +
+                        String(secs).padStart(2, '0');
+                }
+            }
+
+            // Manual refresh button
+            $('#btnRefreshStatus').click(function () {
+                updateStatus();
+            });
+
+            // Copy logs button
+            $('#btnCopyLogs').click(function () {
+                var logs = $('#executionLogs').text();
+                navigator.clipboard.writeText(logs).then(function () {
+                    toastr.success('Logs copied to clipboard!', 'Success');
+                }, function () {
+                    toastr.error('Failed to copy logs', 'Error');
+                });
+            });
+
+            // Auto-refresh if execution is running
+            if (isRunning) {
+                autoRefreshInterval = setInterval(function () {
+                    updateStatus();
+                }, 5000); // Refresh every 5 seconds
+            }
+        });
+    </script>
+}

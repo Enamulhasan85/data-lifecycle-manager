@@ -16,28 +16,19 @@ namespace DataLifecycleManager.Application.Interfaces
     {
         Task<T?> GetByIdAsync(TKey id, CancellationToken cancellationToken = default);
         Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default);
-        
+
         Task<IEnumerable<T>> FindAsync(
             Expression<Func<T, bool>> predicate,
             CancellationToken cancellationToken = default,
             params Expression<Func<T, object>>[] includes);
-        
+
         Task<T?> FirstOrDefaultAsync(
             Expression<Func<T, bool>> predicate,
             CancellationToken cancellationToken = default,
             params Expression<Func<T, object>>[] includes);
-        
+
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
         Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
-
-        Task<PaginatedResult<T>> GetPaginatedAsync(
-            int page,
-            int pageSize,
-            Expression<Func<T, bool>>? predicate = null,
-            Expression<Func<T, object>>? orderBy = null,
-            bool orderByDescending = false,
-            CancellationToken cancellationToken = default,
-            params Expression<Func<T, object>>[] includes);
 
         Task<PaginatedResult<TResult>> GetPaginatedAsync<TResult>(
             int page,
