@@ -23,5 +23,6 @@ public interface ISSISCatalogService
         string folderName,
         string projectName,
         string packageName,
-        Dictionary<string, object>? parameters = null);
+        Dictionary<string, object>? parameters,
+        int timeoutMinutes);
 }

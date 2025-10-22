@@ -83,7 +83,8 @@ public class SSISPackageService : CrudService<SSISPackage, int>, ISSISPackageSer
             package.FolderName,
             package.ProjectName,
             package.PackageName,
-            parameters);
+            parameters,
+            package.TimeoutMinutes);
 
         return (true, result);
     }

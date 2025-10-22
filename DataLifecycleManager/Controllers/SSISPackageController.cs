@@ -233,45 +233,6 @@ public class SSISPackageController : Controller
         }
     }
 
-    // [HttpPost]
-    // public async Task<IActionResult> ExecutePackage(int id)
-    // {
-    //     try
-    //     {
-    //         var startTime = DateTime.UtcNow;
-    //         var (success, result) = await _ssisPackageService.ExecutePackageAsync(id);
-    //         var duration = (int)(DateTime.UtcNow - startTime).TotalSeconds;
-
-    //         if (!success)
-    //         {
-    //             return Json(new { success = false, message = result.ErrorMessage });
-    //         }
-
-    //         return Json(result.Success
-    //             ? new
-    //             {
-    //                 success = true,
-    //                 message = $"Package executed successfully! (ID: {result.ExecutionId}, Duration: {duration}s)",
-    //                 executionId = result.ExecutionId,
-    //                 status = result.Status,
-    //                 durationSeconds = duration
-    //             }
-    //             : new
-    //             {
-    //                 success = false,
-    //                 message = $"Execution failed: {result.ErrorMessage}",
-    //                 status = result.Status,
-    //                 logs = result.Logs
-    //             });
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         _logger.LogError(ex, "Error executing SSIS package");
-    //         return Json(new { success = false, message = $"Error: {ex.Message}" });
-    //     }
-    // }
-
-
     [HttpGet]
     public async Task<IActionResult> Execute(int? id)
     {

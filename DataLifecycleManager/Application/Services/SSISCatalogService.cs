@@ -121,7 +121,8 @@ public class SSISCatalogService : ISSISCatalogService
         string folderName,
         string projectName,
         string packageName,
-        Dictionary<string, object>? parameters = null)
+        Dictionary<string, object>? parameters,
+        int timeoutMinutes)
     {
         var logs = new StringBuilder();
 
@@ -186,7 +187,7 @@ public class SSISCatalogService : ISSISCatalogService
 
             string status = SSISExecutionStatus.Running.ToDisplayString();
             int waitCount = 0;
-            int maxWaitSeconds = 300;
+            int maxWaitSeconds = timeoutMinutes * 60;
 
             while (status == SSISExecutionStatus.Running.ToDisplayString() ||
                    status == SSISExecutionStatus.Created.ToDisplayString() ||
